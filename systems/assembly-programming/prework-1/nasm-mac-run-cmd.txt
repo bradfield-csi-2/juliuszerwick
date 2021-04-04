@@ -1,0 +1,1 @@
+nasm -fmacho64 triangle_mac.asm && ld -L /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib -lSystem triangle_mac.o && ./a.out
