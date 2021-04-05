@@ -6,6 +6,9 @@
 
 uint64_t pagecount(uint64_t memory_size, uint64_t page_size) {
   return memory_size / page_size;
+  //return memory_size >> page_size;
+  //memory_size = memory_size >> page_size;
+  //return memory_size;
 }
 
 int main (int argc, char** argv) {
