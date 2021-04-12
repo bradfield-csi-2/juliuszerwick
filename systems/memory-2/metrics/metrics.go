@@ -9,20 +9,17 @@ import (
 	"time"
 )
 
-// UserId is 8 bytes
-type UserId int
+type UserId int32 // csv file of user data has ID go up to 100,000 - fit in int32
 
 type UserMap map[UserId]*User
 
-// Address struct is 8 + num_chars bytes
 type Address struct {
 	fullAddress string // sequence of bytes, each char is 1 byte
-	zip         int    // int is 4 bytes
+	zip         int32  // zip is 5 digits long - fit in int32
 }
 
-// Dollar Amount is 16 bytes
 type DollarAmount struct {
-	dollars, cents uint64 // both are 8 bytes
+	dollars, cents uint32 // csv file shows payment amount can fit in uint 32
 }
 
 // Payment could be huge as `time.Time` is a struct containing a struct.
@@ -33,23 +30,23 @@ type Payment struct {
 
 // This struct can be very big given the number of elements in `payments` slice.
 type User struct {
-	id       UserId    // 8 bytes
-	name     string    // num_chars bytes
-	age      int       // 8 bytes
-	address  Address   // 8 bytes + num_bytes
-	payments []Payment // HUGE
+	id       UserId
+	name     string
+	age      int8 // age will never exceed 150-200 - fit in int 8
+	address  Address
+	payments []Payment
 }
 
 // Passing in a map of Users (structs) when you only
 // use the age field of each User.
 // Better to simply pass in an array of the age values?
 func AverageAge(users UserMap) float64 {
-	average, count := 0.0, 0.0
+	average, count := float32(0.0), float32(0.0)
 	for _, u := range users {
 		count += 1
-		average += (float64(u.age) - average) / count
+		average += (float32(u.age) - average) / count
 	}
-	return average
+	return float64(average)
 }
 
 // Only need the payments info, so why pass in map of Users?
@@ -99,7 +96,7 @@ func LoadData() UserMap {
 		age, _ := strconv.Atoi(line[2])
 		address := line[3]
 		zip, _ := strconv.Atoi(line[3])
-		users[UserId(id)] = &User{UserId(id), name, age, Address{address, zip}, []Payment{}}
+		users[UserId(id)] = &User{UserId(id), name, int8(age), Address{address, int32(zip)}, []Payment{}}
 	}
 
 	f, err = os.Open("payments.csv")
@@ -117,7 +114,7 @@ func LoadData() UserMap {
 		paymentCents, _ := strconv.Atoi(line[0])
 		datetime, _ := time.Parse(time.RFC3339, line[1])
 		users[UserId(userId)].payments = append(users[UserId(userId)].payments, Payment{
-			DollarAmount{uint64(paymentCents / 100), uint64(paymentCents % 100)},
+			DollarAmount{uint32(paymentCents / 100), uint32(paymentCents % 100)},
 			datetime,
 		})
 	}

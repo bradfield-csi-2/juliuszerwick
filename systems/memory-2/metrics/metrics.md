@@ -13,4 +13,14 @@ PASS
 ok      juliuszerwick/systems/memory-2/metrics  9.374s
 
 
-## 
+## Changing data types of fields in structs didn't have a significant impact.
+
+<metrics>$ go test -bench=.
+goos: darwin
+goarch: amd64
+pkg: juliuszerwick/systems/memory-2/metrics
+BenchmarkMetrics/Average_age-4               178           6772249 ns/op
+BenchmarkMetrics/Average_payment-4            33          35431727 ns/op
+BenchmarkMetrics/Payment_stddev-4             16          69156423 ns/op
+PASS
+ok      juliuszerwick/systems/memory-2/metrics  9.475s
