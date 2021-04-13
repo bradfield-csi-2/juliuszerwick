@@ -14,9 +14,15 @@ type UserId int32 // csv file of user data has ID go up to 100,000 - fit in int3
 
 type UserMap map[UserId]*User
 
+type UsersData struct {
+	//	id       UserId // 4 bytes
+	ages     []int8 // age will never exceed 150-200 - fit in int 8
+	payments []Payment
+}
+
 type Address struct {
-	fullAddress string // sequence of bytes, each char is 1 byte
 	zip         int32  // zip is 5 digits long - fit in int32
+	fullAddress string // sequence of bytes, each char is 1 byte
 }
 
 type DollarAmount struct {
@@ -32,23 +38,24 @@ type Payment struct {
 // This struct can be very big given the number of elements in `payments` slice.
 type User struct {
 	id       UserId // 4 bytes
-	name     string // string
 	age      int8   // age will never exceed 150-200 - fit in int 8
+	name     string // string
 	address  Address
 	payments []Payment
 }
 
-func AverageAge(users UserMap) float64 {
+func AverageAge(users UsersData) float64 {
 	average, count := float32(0.0), float32(0.0)
 	//ages := make([]int8, 0)
-	var ages [100000]int8
-	for i, u := range users {
-		ages[i] = u.age
-	}
+	//var ages [100000]int8
+	//for i, u := range users {
+	//	ages[i] = u.age
+	//}
 
 	//fmt.Println("============================")
 	//fmt.Printf("len(ages): %v\n", len(ages))
 	//fmt.Println("============================")
+	ages := users.ages
 
 	//for _, u := range users {
 	for _, a := range ages {
@@ -59,34 +66,39 @@ func AverageAge(users UserMap) float64 {
 	return float64(average)
 }
 
-func AveragePaymentAmount(users UserMap) float64 {
+func AveragePaymentAmount(users UsersData) float64 {
 	average, count := 0.0, 0.0
-	for _, u := range users {
-		for _, p := range u.payments {
-			count += 1
-			amount := float64(p.amount.dollars) + float64(p.amount.cents)/100
-			average += (amount - average) / count
-		}
+	payments := users.payments
+	//for _, u := range users {
+	//for _, p := range u.payments {
+	for _, p := range payments {
+		count += 1
+		amount := float64(p.amount.dollars) + float64(p.amount.cents)/100
+		average += (amount - average) / count
 	}
+	//}
 	return average
 }
 
 // Compute the standard deviation of payment amounts
-func StdDevPaymentAmount(users UserMap) float64 {
+func StdDevPaymentAmount(users UsersData) float64 {
 	mean := AveragePaymentAmount(users)
 	squaredDiffs, count := 0.0, 0.0
-	for _, u := range users {
-		for _, p := range u.payments {
-			count += 1
-			amount := float64(p.amount.dollars) + float64(p.amount.cents)/100
-			diff := amount - mean
-			squaredDiffs += diff * diff
-		}
+	payments := users.payments
+	//for _, u := range users {
+	//for _, p := range u.payments {
+	for _, p := range payments {
+		count += 1
+		amount := float64(p.amount.dollars) + float64(p.amount.cents)/100
+		diff := amount - mean
+		squaredDiffs += diff * diff
 	}
+	//}
 	return math.Sqrt(squaredDiffs / count)
 }
 
-func LoadData() UserMap {
+//func LoadData() UserMap {
+func LoadData() UsersData {
 	f, err := os.Open("users.csv")
 	if err != nil {
 		log.Fatalln("Unable to read users.csv", err)
@@ -97,14 +109,16 @@ func LoadData() UserMap {
 		log.Fatalln("Unable to parse users.csv as csv", err)
 	}
 
-	users := make(UserMap, len(userLines))
+	//	users := make(UserMap, len(userLines))
+	users := UsersData{}
 	for _, line := range userLines {
-		id, _ := strconv.Atoi(line[0])
-		name := line[1]
+		//id, _ := strconv.Atoi(line[0])
+		//name := line[1]
 		age, _ := strconv.Atoi(line[2])
-		address := line[3]
-		zip, _ := strconv.Atoi(line[3])
-		users[UserId(id)] = &User{UserId(id), name, int8(age), Address{address, int32(zip)}, []Payment{}}
+		//address := line[3]
+		//zip, _ := strconv.Atoi(line[3])
+		//users[UserId(id)] = &User{UserId(id), int8(age), name, Address{int32(zip), address}, []Payment{}}
+		users.ages = append(users.ages, int8(age))
 	}
 
 	f, err = os.Open("payments.csv")
@@ -118,10 +132,11 @@ func LoadData() UserMap {
 	}
 
 	for _, line := range paymentLines {
-		userId, _ := strconv.Atoi(line[2])
+		//userId, _ := strconv.Atoi(line[2])
 		paymentCents, _ := strconv.Atoi(line[0])
 		datetime, _ := time.Parse(time.RFC3339, line[1])
-		users[UserId(userId)].payments = append(users[UserId(userId)].payments, Payment{
+		//users[UserId(userId)].payments = append(users[UserId(userId)].payments, Payment{
+		users.payments = append(users.payments, Payment{
 			DollarAmount{uint32(paymentCents / 100), uint32(paymentCents % 100)},
 			datetime,
 		})

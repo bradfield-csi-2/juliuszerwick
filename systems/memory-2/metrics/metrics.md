@@ -102,4 +102,40 @@ PASS
 ok      juliuszerwick/systems/memory-2/metrics  11.349s
 ```
 
+## Substantial changes to LoadData() and functions
 
+```
+<metrics>$ go test -bench=.
+goos: darwin
+goarch: amd64
+pkg: juliuszerwick/systems/memory-2/metrics
+BenchmarkMetrics/Average_age-4              2180            603709 ns/op
+BenchmarkMetrics/Average_payment-4           154           7662489 ns/op
+BenchmarkMetrics/Payment_stddev-4             91          11121669 ns/op
+PASS
+ok      juliuszerwick/systems/memory-2/metrics  6.708s
+```
+
+```
+<metrics>$ go test -bench=.
+goos: darwin
+goarch: amd64
+pkg: juliuszerwick/systems/memory-2/metrics
+BenchmarkMetrics/Average_age-4              2038            594245 ns/op
+BenchmarkMetrics/Average_payment-4           152           7901424 ns/op
+BenchmarkMetrics/Payment_stddev-4            100          11264603 ns/op
+PASS
+ok      juliuszerwick/systems/memory-2/metrics  7.475s
+```
+
+```
+<metrics>$ go test -bench=.
+goos: darwin
+goarch: amd64
+pkg: juliuszerwick/systems/memory-2/metrics
+BenchmarkMetrics/Average_age-4              2169            619019 ns/op
+BenchmarkMetrics/Average_payment-4           152           7621787 ns/op
+BenchmarkMetrics/Payment_stddev-4            100          11634408 ns/op
+PASS
+ok      juliuszerwick/systems/memory-2/metrics  6.571s
+```
