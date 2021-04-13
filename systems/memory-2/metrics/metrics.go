@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"encoding/csv"
+	_ "fmt"
 	"log"
 	"math"
 	"os"
@@ -30,26 +31,34 @@ type Payment struct {
 
 // This struct can be very big given the number of elements in `payments` slice.
 type User struct {
-	id       UserId
-	name     string
-	age      int8 // age will never exceed 150-200 - fit in int 8
+	id       UserId // 4 bytes
+	name     string // string
+	age      int8   // age will never exceed 150-200 - fit in int 8
 	address  Address
 	payments []Payment
 }
 
-// Passing in a map of Users (structs) when you only
-// use the age field of each User.
-// Better to simply pass in an array of the age values?
 func AverageAge(users UserMap) float64 {
 	average, count := float32(0.0), float32(0.0)
-	for _, u := range users {
+	//ages := make([]int8, 0)
+	var ages [100000]int8
+	for i, u := range users {
+		ages[i] = u.age
+	}
+
+	//fmt.Println("============================")
+	//fmt.Printf("len(ages): %v\n", len(ages))
+	//fmt.Println("============================")
+
+	//for _, u := range users {
+	for _, a := range ages {
 		count += 1
-		average += (float32(u.age) - average) / count
+		//average += (float32(u.age) - average) / count
+		average += (float32(a) - average) / count
 	}
 	return float64(average)
 }
 
-// Only need the payments info, so why pass in map of Users?
 func AveragePaymentAmount(users UserMap) float64 {
 	average, count := 0.0, 0.0
 	for _, u := range users {
@@ -63,7 +72,6 @@ func AveragePaymentAmount(users UserMap) float64 {
 }
 
 // Compute the standard deviation of payment amounts
-// Same as AveragePaymentAmount, why pass in a map of Users?
 func StdDevPaymentAmount(users UserMap) float64 {
 	mean := AveragePaymentAmount(users)
 	squaredDiffs, count := 0.0, 0.0
