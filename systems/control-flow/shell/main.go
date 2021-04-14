@@ -2,22 +2,16 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"strings"
 )
 
 func main() {
 	fmt.Println("Entering shell program")
-
-	/* The main loop
-	- create an infinite loop
-	- at the start of the loop, print the shell prompt
-	- allow user input on the same line
-	- once user writes the enter character (carriage return) '\r'
-	- if user enters the EOF terminal control character, exit loop and program
-	*/
 
 	reader := bufio.NewReader(os.Stdin)
 
@@ -40,8 +34,36 @@ func main() {
 			break
 		}
 
+		// Take input variable and parse for commands instead of echoing back to user.
+		userArgs := strings.Split(input, " ")
+		//fmt.Printf("userArgs: %v\n", userArgs)
+		processArgs(userArgs)
+
 		// Echo back user input on a separate line.
-		fmt.Println(input)
+		//fmt.Println(input)
+	}
+}
+
+func processArgs(args []string) {
+	var cmd *exec.Cmd
+	if len(args) > 1 {
+		input := strings.Join(args[1:], " ")
+		//fmt.Printf("input to cmd: %v\n", input)
+		cmd = exec.Command(args[0], input)
+	} else {
+		cmd = exec.Command(args[0])
 	}
 
+	//cmd.Stdin = strings.NewReader(input)
+
+	var out bytes.Buffer
+	cmd.Stdout = &out
+
+	err := cmd.Run()
+	if err != nil {
+		fmt.Printf("%s: command not found\n", args[0])
+	}
+
+	//fmt.Printf("%q\n", out.String())
+	fmt.Print(out.String())
 }
