@@ -7,7 +7,9 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"os/signal"
 	"strings"
+	"syscall"
 )
 
 func main() {
@@ -46,6 +48,7 @@ func main() {
 
 func processArgs(args []string) {
 	var cmd *exec.Cmd
+
 	if len(args) > 1 {
 		input := strings.Join(args[1:], " ")
 		//fmt.Printf("input to cmd: %v\n", input)
@@ -59,11 +62,24 @@ func processArgs(args []string) {
 	var out bytes.Buffer
 	cmd.Stdout = &out
 
-	err := cmd.Run()
-	if err != nil {
+	//err := cmd.Run()
+	if err := cmd.Start(); err != nil {
 		fmt.Printf("%s: command not found\n", args[0])
 	}
 
+	go signalHandler(cmd.Process)
+
+	if err := cmd.Wait(); err != nil {
+		fmt.Println()
+	}
 	//fmt.Printf("%q\n", out.String())
 	fmt.Print(out.String())
+}
+
+func signalHandler(process *os.Process) {
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	sig := <-sigChan
+	process.Signal(sig)
 }
