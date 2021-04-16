@@ -38,11 +38,7 @@ func main() {
 
 		// Take input variable and parse for commands instead of echoing back to user.
 		userArgs := strings.Split(input, " ")
-		//fmt.Printf("userArgs: %v\n", userArgs)
 		processArgs(userArgs)
-
-		// Echo back user input on a separate line.
-		//fmt.Println(input)
 	}
 }
 
@@ -51,18 +47,14 @@ func processArgs(args []string) {
 
 	if len(args) > 1 {
 		input := strings.Join(args[1:], " ")
-		//fmt.Printf("input to cmd: %v\n", input)
 		cmd = exec.Command(args[0], input)
 	} else {
 		cmd = exec.Command(args[0])
 	}
 
-	//cmd.Stdin = strings.NewReader(input)
-
 	var out bytes.Buffer
 	cmd.Stdout = &out
 
-	//err := cmd.Run()
 	if err := cmd.Start(); err != nil {
 		fmt.Printf("%s: command not found\n", args[0])
 	}
@@ -72,7 +64,6 @@ func processArgs(args []string) {
 	if err := cmd.Wait(); err != nil {
 		fmt.Println()
 	}
-	//fmt.Printf("%q\n", out.String())
 	fmt.Print(out.String())
 }
 
