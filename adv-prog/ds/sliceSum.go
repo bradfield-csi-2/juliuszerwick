@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"reflect"
 	"unsafe"
 )
 
@@ -9,30 +10,20 @@ import (
 // slice without using range or the [] operator.
 
 func main() {
-	var m int = 1
-	mOffset := unsafe.Sizeof(m)
+	// The int type is made of 64-bits on a 64-bit machine.
+	ints := []int{1, 2, 3, 4, 5}
+	fmt.Printf("sum: %d\n", sliceSum(ints))
+}
 
-	ints := []int{1, 2, 3}
-	//sum := 0
-	num := *(*int)(unsafe.Pointer(uintptr(unsafe.Pointer(&ints))))
-	//num := *(*int)(unsafe.Pointer(uintptr(unsafe.Pointer(&ints))))
-	fmt.Printf("num: %v\n", num)
-	fmt.Println()
+func sliceSum(ints []int) int {
+	sum := 0
+	sliceHeader := (*reflect.SliceHeader)(unsafe.Pointer(&ints))
+	sliceData := sliceHeader.Data
 
 	for i := 0; i < len(ints); i++ {
-		fmt.Printf("i: %d\n", i)
-		// Offset will be 4 bytes times the current index.
-		offset := uintptr(i) * mOffset
-		intsPtr := uintptr(unsafe.Pointer(&ints))
-		fmt.Printf("intsPtr: %v\n", intsPtr)
-
-		v := intsPtr + offset
-		fmt.Printf("v: %v\n", v)
-
-		num := *(*int)(unsafe.Pointer(uintptr(unsafe.Pointer(&ints)) + offset))
-		fmt.Printf("num: %v\n", num)
-		fmt.Println()
+		num := *(*int)(unsafe.Pointer(sliceData + uintptr(8*i)))
+		sum += num
 	}
 
-	//fmt.Printf("sum: %d\n", sum)
+	return sum
 }
