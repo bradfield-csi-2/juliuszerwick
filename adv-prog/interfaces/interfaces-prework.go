@@ -93,3 +93,18 @@ func printMethods(inter interface{}) {
 	fmt.Printf("fp: %v\n", fp)
 	//fmt.Printf("fp string: %v\n", *(*string)(fp))
 }
+
+/*
+Exercise 3:
+
+Now that you know how interfaces are represented in memory, how do you
+think “type assertions” and “type switches” work?
+If you were designing Go yourself, how would you approach these features?
+
+
+Answer:
+I think that a type assertion would access the first word in an interface value's
+memory representation, follow the pointer to access the itable, and then check the type stored in the itable.
+
+And with a type switch, the return value of the initial type assertion is used to comparewith each of the cases. Each case would be a different type and if the type matches the return value of the type assertion then that case's logic would be executed.
+*/
