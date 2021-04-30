@@ -12,6 +12,14 @@ func main() {
 	// Exercise 1
 	i := extractInt(inter)
 	fmt.Printf("inter data: %v\n", i)
+
+	fmt.Println()
+
+	// Exercise 2
+	v := Val{num: 5}
+	//v.PrintNum()
+	b := Blub(v)
+	printMethods(b)
 }
 
 /*
@@ -22,8 +30,16 @@ that extracts the int value without using a type assertion or type switch.
 */
 
 type iface struct {
-	tab  unsafe.Pointer
+	tab  *itab
 	data unsafe.Pointer
+}
+
+type itab struct {
+	inter unsafe.Pointer
+	_type unsafe.Pointer
+	hash  uint32 // copy of _type.hash. Used for type switches.
+	_     [4]byte
+	fun   [1]uintptr // variable sized. fun[0]==0 means _type does not implement inter.
 }
 
 func extractInt(inter interface{}) int {
@@ -31,4 +47,49 @@ func extractInt(inter interface{}) int {
 	d := *(*int)(i.data)
 
 	return d
+}
+
+/*
+Exercise 2:
+
+Given an arbitrary interface value, write a function that iterates through
+the corresponding itable and prints out information about methods that
+extracts the int value without using a type assertion or type switch.
+*/
+
+type Blub interface {
+	PrintNum()
+	SayHello()
+}
+
+type Val struct {
+	num int
+}
+
+func (v Val) PrintNum() {
+	fmt.Println(v.num)
+}
+
+func (v Val) SayHello() {
+	fmt.Println("Hello!")
+}
+
+func printMethods(inter interface{}) {
+	//	t, ok := inter.(Val)
+	//	fmt.Printf("t: %v\nok: %v\n", t, ok)
+
+	i := (*iface)(unsafe.Pointer(&inter))
+	it := i.tab
+
+	fmt.Printf("i: %v\n", i)
+	fmt.Printf("*i: %v\n", *i)
+	fmt.Printf("it: %v\n", it)
+	fmt.Printf("it.fun[0]: %v\n", it.fun[0])
+
+	fmt.Println()
+
+	f := it.fun[0]
+	fp := unsafe.Pointer(f)
+	fmt.Printf("fp: %v\n", fp)
+	//fmt.Printf("fp string: %v\n", *(*string)(fp))
 }
