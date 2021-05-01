@@ -19,6 +19,8 @@ func main() {
 	v := Val{num: 5}
 	//v.PrintNum()
 	b := Blub(v)
+	b.PrintNum()
+	b.SayHello()
 	printMethods(b)
 }
 
@@ -84,13 +86,16 @@ func printMethods(inter interface{}) {
 	fmt.Printf("i: %v\n", i)
 	fmt.Printf("*i: %v\n", *i)
 	fmt.Printf("it: %v\n", it)
+	fmt.Printf("it.fun: %v\n", it.fun)
 	fmt.Printf("it.fun[0]: %v\n", it.fun[0])
+	fmt.Printf("it.fun[0]: %v\n", unsafe.Pointer(it.fun[0]))
+	//fmt.Printf("it.fun[1]: %v\n", it.fun[1])
 
 	fmt.Println()
 
-	f := it.fun[0]
-	fp := unsafe.Pointer(f)
-	fmt.Printf("fp: %v\n", fp)
+	//f := it.fun[0]
+	//fp := unsafe.Pointer(f)
+	//fmt.Printf("fp: %v\n", fp)
 	//fmt.Printf("fp string: %v\n", *(*string)(fp))
 }
 
