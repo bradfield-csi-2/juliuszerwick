@@ -6,6 +6,11 @@ import (
 	"time"
 )
 
+/*
+	I'm not sure I see what the bug is here. Could it be
+	that we should only print one of the responses?
+*/
+
 var responses = []string{
 	"200 OK",
 	"402 Payment Required",
@@ -33,8 +38,10 @@ func parallelQuery(endpoints []string) string {
 	for i := range endpoints {
 		go func(i int) {
 			results <- query(endpoints[i])
+			//fmt.Println("In parallelQuery")
 		}(i)
 	}
+	//fmt.Println("before <-results")
 	return <-results
 }
 
@@ -48,6 +55,7 @@ func main() {
 	// Simulate long-running server process that makes continuous queries
 	for {
 		fmt.Println(parallelQuery(endpoints))
+		//	fmt.Println("Before delay in infinite for loop!")
 		delay := randomDelay(100)
 		time.Sleep(delay)
 	}
