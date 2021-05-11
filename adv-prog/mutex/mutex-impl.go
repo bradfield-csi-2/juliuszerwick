@@ -11,6 +11,7 @@ Test your implementation by using it to guard concurrent access to a counter var
 
 type mutex struct {
 	locked bool
+	value  uint64
 }
 
 func (m *mutex) Lock() {
@@ -39,17 +40,20 @@ func (m *mutex) Unlock() {
 	// Else, block.
 }
 
-func increment(i *int, m *mutex) {
+// Question: How do we make the Lock() and Unlock()
+//					 operations prevent access to the value
+//           by other goroutines/function calls?
+func increment(m *mutex) {
 	m.Lock()
-	*i += 1
+	m.value += 1
 	m.Unlock()
 }
 
 func main() {
 	m := new(mutex)
-	x := 1
-	fmt.Printf("x = %d\n", x)
+	m.value = uint64(1)
+	fmt.Printf("m.value = %d\n", m.value)
 
-	increment(&x, m)
-	fmt.Printf("x = %d\n", x)
+	increment(m)
+	fmt.Printf("m.value = %d\n", m.value)
 }
