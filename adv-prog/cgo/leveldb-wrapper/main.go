@@ -1,7 +1,9 @@
 package main
 
 /*
-#include <cassert>
+#cgo CFLAGS: -I/usr/include
+
+#include <stdlib.h>
 #include "leveldb/db.h"
 
 leveldb::DB* db;
@@ -13,7 +15,6 @@ int OpenDB(leveldb::DB* db) {
 	leveldb::Status status = leveldb::DB::Open(options, "/tmp/testdb", &db);
 
 	if (!status.ok()) {
-		cerr << s.ToString() << endl;
 		return 0;
 	}
 
@@ -29,7 +30,6 @@ int Put(leveldb::DB* db, std::string key, std::string value) {
 	leveldb::Status s = db->Put(leveldb::WriteOptions(), key, value);
 
 	if (!s.ok()) {
-		cerr << s.ToString() << endl;
 		return 0;
 	}
 
@@ -39,10 +39,6 @@ int Put(leveldb::DB* db, std::string key, std::string value) {
 std::string Get(leveldb::DB* db, std::string key) {
 	std::string value;
 	leveldb::Status s = db->Get(leveldb::WriteOptions(), key, &value);
-
-	if (!s.ok()) {
-		cerr << s.ToString() << endl;
-	}
 
 	return value;
 }
@@ -58,6 +54,9 @@ Steps:
 	3) Add support to put values into the db and test insertions.
 	4) Add support for getting values from the db and test with Put
 		 to insert a value and then Get to get the same value.
+
+NOTE: Import "leveldb/c.h" and use structs/functions defined in there and c.cc
+			https://github.com/google/leveldb/blob/master/db/c.cc
 */
 
 // type DB C.leveldb::DB*
