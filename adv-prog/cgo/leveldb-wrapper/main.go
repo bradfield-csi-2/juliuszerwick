@@ -60,6 +60,8 @@ Steps:
 		 to insert a value and then Get to get the same value.
 */
 
+// type DB C.leveldb::DB*
+
 func main() {
 	// Open a db connection.
 
@@ -71,11 +73,15 @@ func main() {
 }
 
 // Open() opens a connection to the database.
-func Open() {
+func Open(db *DB) int {
+	i := int(C.OpenDB(db))
+	return i
 }
 
 // Close() closes a connection to the database.
-func Close() {
+func Close(db *DB) int {
+	i := int(C.CloseDB(db))
+	return i
 }
 
 // Put() inserts a value into the database.
