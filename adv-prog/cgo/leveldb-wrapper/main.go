@@ -59,10 +59,19 @@ NOTE: Import "leveldb/c.h" and use structs/functions defined in there and c.cc
 			https://github.com/google/leveldb/blob/master/db/c.cc
 */
 
-// type DB C.leveldb::DB*
+type Database struct {
+	LevelDB *C.leveldb_t
+}
 
 func main() {
 	// Open a db connection.
+	db := C.leveldb_t
+	dbName := "cgo-testdb"
+	i := Open(dbName)
+
+	if i == 0 {
+		log.Fatalln("failed to open db connection")
+	}
 
 	// Make a Put into the db.
 
@@ -72,21 +81,27 @@ func main() {
 }
 
 // Open() opens a connection to the database.
-func Open(db *DB) int {
-	i := int(C.OpenDB(db))
-	return i
+func Open(name string) (*Database, error) {
+	// Pass these options into Open() instead.
+	opts := C.leveldb_options_t
+	dbName := C.CString(name)
+	defer C.free(unsafe.Pointer(dbName))
+
+	ldb := C.leveldb_open(opts, dbName)
+
+	return &Database{ldb}, nil
 }
 
 // Close() closes a connection to the database.
-func Close(db *DB) int {
-	i := int(C.CloseDB(db))
-	return i
+func Close(db *Database) error {
+	C.leveldb_close(db)
 }
 
 // Put() inserts a value into the database.
-func Put(key string, value string) error {
-}
+//func Put(db *Database, key string, value string) error {
+//	//leveldb_put(db, )
+//}
 
 // Get() retrieves a value from the database.
-func Get(key string) (value string) {
-}
+//func Get(key string) (value string) {
+//}
