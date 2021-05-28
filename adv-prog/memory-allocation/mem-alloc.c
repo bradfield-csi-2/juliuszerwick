@@ -28,15 +28,63 @@ void main() {
 }
 
 void *malloc(size_t size) {
+  size_t total_size;
   void *block;
-  // If size is positive, increments brk by size bytes thus allocating memory.
-  // If size is negative, decrements brk by size bytes thus freeing memory.
-  block = sbrk(size);
+  header_t *header;
 
-  // Check for failure from calling sbrk(size).
-  if (block == (void*) -1) {
+  if (!size) {
     return NULL;
   }
 
-  return block;
+  pthread_mutex_lock(&global_malloc_lock);
+  header = get_free_block(size);
+
+  if (header) {
+    header->s.is_free = 0;
+    pthread_mutex_unlock(&global_malloc_lock);
+    return (void*)(header + 1)
+  }
+
+  total_size = sizeof(header_t) + size;
+  // If size is positive, increments brk by size bytes thus allocating memory.
+  // If size is negative, decrements brk by size bytes thus freeing memory.
+  block = sbrk(total_size);
+
+  // Check for failure from calling sbrk(size).
+  if (block == (void*) -1) {
+    pthread_mutex_unlock(&global_malloc_lock);
+    return NULL;
+  }
+
+  header = block;
+  header->s.size = size;
+  header->s.is_free = 0;
+  header->s.next = NULL;
+
+  if (!head) {
+    head = header;
+  }
+
+  if (tail) {
+    tail->s.next = header;
+  }
+
+  tail = header;
+  pthread_mutex_unlock(&global_malloc_lock);
+  return (void*)(header + 1);
+}
+
+// Traverse linked list of memory blocks and find the first block
+// that is both free and greater or equal to the requested size.
+header_t *get_free_block(size_t size) {
+  header_t *curr = head;
+
+  while(curr) {
+    if (curr->s.is_free && curr->s.size >= size) {
+      return curr;
+    }
+    curr = curr->s.next;
+  }
+
+  return NULL;
 }
