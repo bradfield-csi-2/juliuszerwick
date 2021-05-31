@@ -67,52 +67,22 @@ func main() {
 		log.Fatal(err)
 	}
 
-	b := make([]byte, 4)
+	b := make([]byte, 24)
 	_, err = f.Read(b)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Magic number: %x\n", binary.LittleEndian.Uint32(b))
+	fmt.Printf("Magic number: %x\n", binary.LittleEndian.Uint32(b[0:4]))
 
-	b = make([]byte, 2)
-	_, err = f.Read(b)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("Major version: %x\n", binary.LittleEndian.Uint16(b))
+	fmt.Printf("Major version: %x\n", binary.LittleEndian.Uint16(b[4:6]))
 
-	b = make([]byte, 2)
-	_, err = f.Read(b)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("Minor version: %x\n", binary.LittleEndian.Uint16(b))
+	fmt.Printf("Minor version: %x\n", binary.LittleEndian.Uint16(b[6:8]))
 
-	b = make([]byte, 4)
-	_, err = f.Read(b)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("Time zone offset: %x\n", binary.LittleEndian.Uint32(b))
+	fmt.Printf("Time zone offset: %x\n", binary.LittleEndian.Uint32(b[8:12]))
 
-	b = make([]byte, 4)
-	_, err = f.Read(b)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("Time stamp accuracy: %x\n", binary.LittleEndian.Uint32(b))
+	fmt.Printf("Time stamp accuracy: %x\n", binary.LittleEndian.Uint32(b[12:16]))
 
-	b = make([]byte, 4)
-	_, err = f.Read(b)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("Snapshot length: %x\n", binary.LittleEndian.Uint32(b))
+	fmt.Printf("Snapshot length: %x\n", binary.LittleEndian.Uint32(b[16:20]))
 
-	b = make([]byte, 4)
-	_, err = f.Read(b)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("Link layer type: %x\n", binary.LittleEndian.Uint32(b))
+	fmt.Printf("Link layer type: %x\n", binary.LittleEndian.Uint32(b[20:]))
 }
