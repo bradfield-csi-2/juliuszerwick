@@ -67,6 +67,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Read enough bytes to obtain the pcap file header.
 	b := make([]byte, 24)
 	_, err = f.Read(b)
 	if err != nil {
