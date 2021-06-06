@@ -52,13 +52,13 @@ type pcap_file_header struct {
 // The header is 16-bytes.
 type pcap_packet_header struct {
 	// 4-byte value -> 57d09840
-	time_stamp_large int
+	time_stamp_large uint32
 	// 4-byte value -> 00031f0a
-	time_stamp_small int
+	time_stamp_small uint32
 	// 4-byte value -> 0000 004e -> 18 bytes?
-	length int
+	length uint32
 	// 4-byte value -> same value as length, so not truncated?
-	ut_length int
+	ut_length uint32
 }
 
 func parsePcapHeader(data []byte) pcap_file_header {
@@ -75,12 +75,31 @@ func parsePcapHeader(data []byte) pcap_file_header {
 	return ph
 }
 
+func parsePacketHeader(data []byte) pcap_packet_header {
+	pph := pcap_packet_header{}
+
+	pph.time_stamp_large = binary.LittleEndian.Uint32(data[0:4])
+	pph.time_stamp_small = binary.LittleEndian.Uint32(data[4:8])
+	pph.length = binary.LittleEndian.Uint32(data[8:12])
+	pph.ut_length = binary.LittleEndian.Uint32(data[12:16])
+
+	return pph
+}
+
 func main() {
+	// Read the entire contents of the file into a byte array.
 	data, err := ioutil.ReadFile("./net.cap")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	pHeader := parsePcapHeader(data)
-	fmt.Printf("pcap_file_header: %#v\n", pHeader)
+	// Parse and store the data in the pcap file header.
+	pcapHeader := parsePcapHeader(data[0:24])
+	fmt.Printf("pcap_file_header: %#v\n", pcapHeader)
+
+	fmt.Println()
+
+	// Parse the data in the pcap per packet header.
+	packetHeader := parsePacketHeader(data[24:36])
+	fmt.Printf("packet_header: %#v\n", packetHeader)
 }
