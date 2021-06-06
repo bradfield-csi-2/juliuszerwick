@@ -95,11 +95,16 @@ func main() {
 
 	// Parse and store the data in the pcap file header.
 	pcapHeader := parsePcapHeader(data[0:24])
-	fmt.Printf("pcap_file_header: %#v\n", pcapHeader)
-
-	fmt.Println()
+	fmt.Printf("pcap_file_header: %#v\n\n", pcapHeader)
 
 	// Parse the data in the pcap per packet header.
 	packetHeader := parsePacketHeader(data[24:36])
-	fmt.Printf("packet_header: %#v\n", packetHeader)
+	fmt.Printf("packet_header: %#v\n\n", packetHeader)
+
+	// Verify that packet lengths are the same.
+	if packetHeader.length != packetHeader.ut_length {
+		fmt.Printf("Packet lengths not equal!\nlength = %d\nut_length = %d\n", packetHeader.length, packetHeader.ut_length)
+	} else {
+		fmt.Printf("Packet lengths are equal!\n")
+	}
 }
