@@ -61,6 +61,19 @@ type pcap_packet_header struct {
 	ut_length uint32
 }
 
+type ethernet_frame struct {
+	// 6 byte value
+	mac_dest []byte
+	// 6 byte value
+	mac_src []byte
+	// 2 byte value; indicates encapsulated IP protocol
+	// IPv4: 0x0800
+	// IPv6: 0x86DD
+	ethertype uint16
+	// 46-1500 byte value; data payload
+	payload []byte
+}
+
 func parsePcapHeader(data []byte) pcap_file_header {
 	ph := pcap_file_header{}
 
@@ -84,6 +97,21 @@ func parsePacketHeader(data []byte) pcap_packet_header {
 	pph.ut_length = binary.LittleEndian.Uint32(data[12:16])
 
 	return pph
+}
+
+func parseEthernetFrame(data []byte) ethernet_frame {
+	ef := ethernet_frame{}
+
+	//ef.mac_dest = binary.BigEndian.Uint64(data[0:6])
+	ef.mac_dest = data[0:6]
+	//ef.mac_src = binary.BigEndian.Uint64(data[6:12])
+	ef.mac_src = data[6:12]
+	ef.ethertype = binary.BigEndian.Uint16(data[12:14])
+	//ef.ethertype = data[12:14]
+	//ef.payload = binary.BigEndian.Uint64(data[14:])
+	ef.payload = data[14:]
+
+	return ef
 }
 
 func countPackets(data []byte) int {
@@ -126,4 +154,7 @@ func main() {
 	} else {
 		fmt.Printf("ERROR: Only counted %d packets in file.\n\n", numPackets)
 	}
+
+	ethernetFrame := parseEthernetFrame(data[40:])
+	fmt.Printf("ethernetFrame\nmac_dest:  %#v\nmac_src: %#v\nethertype: %#v\n\n", ethernetFrame.mac_dest, ethernetFrame.mac_src, ethernetFrame.ethertype)
 }
