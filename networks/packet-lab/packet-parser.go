@@ -3,8 +3,8 @@ package main
 import (
 	"encoding/binary"
 	"fmt"
+	"io/ioutil"
 	"log"
-	"os"
 )
 
 /*
@@ -31,20 +31,20 @@ TODOS:
 // `xxd -l 32 net.cap`
 type pcap_file_header struct {
 	// 4-byte number -> d4c3b2a1
-	magic_num int
+	magic_num uint32
 	// 2-byte number that should equal 2
-	major_version int
+	major_version uint16
 	// 2-byte number that should equal 4
-	minor_version int
+	minor_version uint16
 	// 4-byte value that is always 0
-	time_zone_offset int
+	time_zone_offset uint32
 	// 4-byte value that is always 0
-	time_stamp_accuracy int
+	time_stamp_accuracy uint32
 	// 4-byte number -> ea05 0000
-	snapshot_length int
+	snapshot_length uint32
 	// 4-byte number -> 0100 0000 (little-endian -> 0000 0001)
 	// This is a value of 1 which indicates LINKTYPE_ETHERNET
-	link_layer_header_type int
+	link_layer_header_type uint32
 }
 
 // Each packet in a pcap file following the pcap
@@ -61,29 +61,26 @@ type pcap_packet_header struct {
 	ut_length int
 }
 
+func parsePcapHeader(data []byte) pcap_file_header {
+	ph := pcap_file_header{}
+
+	ph.magic_num = binary.BigEndian.Uint32(data[0:4])
+	ph.major_version = binary.LittleEndian.Uint16(data[4:6])
+	ph.minor_version = binary.LittleEndian.Uint16(data[6:8])
+	ph.time_zone_offset = binary.LittleEndian.Uint32(data[8:12])
+	ph.time_stamp_accuracy = binary.LittleEndian.Uint32(data[12:16])
+	ph.snapshot_length = binary.LittleEndian.Uint32(data[16:20])
+	ph.link_layer_header_type = binary.LittleEndian.Uint32(data[20:24])
+
+	return ph
+}
+
 func main() {
-	f, err := os.Open("./net.cap")
+	data, err := ioutil.ReadFile("./net.cap")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Read enough bytes to obtain the pcap file header.
-	b := make([]byte, 24)
-	_, err = f.Read(b)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("Magic number: %x\n", binary.LittleEndian.Uint32(b[0:4]))
-
-	fmt.Printf("Major version: %x\n", binary.LittleEndian.Uint16(b[4:6]))
-
-	fmt.Printf("Minor version: %x\n", binary.LittleEndian.Uint16(b[6:8]))
-
-	fmt.Printf("Time zone offset: %x\n", binary.LittleEndian.Uint32(b[8:12]))
-
-	fmt.Printf("Time stamp accuracy: %x\n", binary.LittleEndian.Uint32(b[12:16]))
-
-	fmt.Printf("Snapshot length: %x\n", binary.LittleEndian.Uint32(b[16:20]))
-
-	fmt.Printf("Link layer type: %x\n", binary.LittleEndian.Uint32(b[20:]))
+	pHeader := parsePcapHeader(data)
+	fmt.Printf("pcap_file_header: %#v\n", pHeader)
 }
