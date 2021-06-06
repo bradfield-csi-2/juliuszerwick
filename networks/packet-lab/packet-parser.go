@@ -86,25 +86,51 @@ func parsePacketHeader(data []byte) pcap_packet_header {
 	return pph
 }
 
+func countPackets(data []byte) int {
+	var i uint32
+	num := 0
+	length := uint32(len(data))
+
+	for i = 0; i < length; {
+		//headerStart := i
+		//headerEnd := i + 16
+
+		// Parse the data in the pcap per packet header.
+		packetHeader := parsePacketHeader(data[i : i+16])
+		fmt.Printf("packet_header: %#v\n\n", packetHeader)
+
+		// Verify that packet lengths are the same.
+		if packetHeader.length != packetHeader.ut_length {
+			fmt.Printf("Packet lengths not equal!\nlength = %d\nut_length = %d\n", packetHeader.length, packetHeader.ut_length)
+		} else {
+			fmt.Printf("Packet lengths are equal!\n")
+		}
+
+		i += packetHeader.length + 16
+		//fmt.Printf("i = %d\n\n", i)
+		num += 1
+	}
+
+	return num
+}
+
 func main() {
 	// Read the entire contents of the file into a byte array.
 	data, err := ioutil.ReadFile("./net.cap")
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Printf("length of file: %d\n\n", len(data))
 
 	// Parse and store the data in the pcap file header.
 	pcapHeader := parsePcapHeader(data[0:24])
 	fmt.Printf("pcap_file_header: %#v\n\n", pcapHeader)
 
-	// Parse the data in the pcap per packet header.
-	packetHeader := parsePacketHeader(data[24:36])
-	fmt.Printf("packet_header: %#v\n\n", packetHeader)
-
-	// Verify that packet lengths are the same.
-	if packetHeader.length != packetHeader.ut_length {
-		fmt.Printf("Packet lengths not equal!\nlength = %d\nut_length = %d\n", packetHeader.length, packetHeader.ut_length)
+	// Count packets in file.
+	numPackets := countPackets(data[24:])
+	if numPackets == 99 {
+		fmt.Printf("99 packets in file!\n\n")
 	} else {
-		fmt.Printf("Packet lengths are equal!\n")
+		fmt.Printf("ERROR: Only counted %d packets in file.\n\n", numPackets)
 	}
 }
