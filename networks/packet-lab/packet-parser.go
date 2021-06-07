@@ -7,18 +7,6 @@ import (
 	"log"
 )
 
-/*
-TODOS:
-	1) Define pcap file format with a struct.
-	2) Define packet structure with a struct.
-	3) Define HTTP, TCP, IP, Ethernet structures with structs.
-	4) Write helper functions meant to parse each header:
-			- HTTP
-			- TCP
-			- IP
-			- Ethernet
-*/
-
 // Magic number of net.cap file is 0xd4c3b2a1
 // This means the host that wrote the file uses the opposite
 // byte order from my machine.
@@ -28,7 +16,7 @@ TODOS:
 // pcap file header that appears before packets.
 // Header is 24 bytes.
 // Values recorded in comments below are taken from using xxd:
-// `xxd -l 32 net.cap`
+// `xxd -l 32 -e net.cap`
 type pcap_file_header struct {
 	// 4-byte number -> d4c3b2a1
 	magic_num uint32
@@ -55,7 +43,7 @@ type pcap_packet_header struct {
 	time_stamp_large uint32
 	// 4-byte value -> 00031f0a
 	time_stamp_small uint32
-	// 4-byte value -> 0000 004e -> 18 bytes?
+	// 4-byte value -> 0000 004e
 	length uint32
 	// 4-byte value -> same value as length, so not truncated?
 	ut_length uint32
@@ -72,6 +60,37 @@ type ethernet_frame struct {
 	ethertype uint16
 	// 46-1500 byte value; data payload
 	payload []byte
+}
+
+type ip_header struct {
+	version         []byte
+	ihl             []byte
+	dscp            []byte
+	ecn             []byte
+	total_length    []byte
+	id              []byte
+	flags           []byte
+	fragment_offset []byte
+	ttl             uint8
+	protocol        uint8
+	header_chechsum uint16
+	src_ip          uint32
+	dest_ip         uint32
+	options         []byte
+}
+
+type tcp_header struct {
+	src_port    uint16
+	dest_port   uint16
+	seq_num     uint32
+	ack_num     uint32
+	data_offset []byte
+	reserved    []byte
+	flags       []byte
+	window_size uint16
+	checksum    uint16
+	urg_pointer uint16
+	options     []byte
 }
 
 func parsePcapHeader(data []byte) pcap_file_header {
@@ -109,6 +128,8 @@ func parseEthernetFrame(data []byte) ethernet_frame {
 	ef.ethertype = binary.BigEndian.Uint16(data[12:14])
 	//ef.ethertype = data[12:14]
 	//ef.payload = binary.BigEndian.Uint64(data[14:])
+	// Payload below is WRONG!
+	// Should be payload = packet_header.length - (14 bytes from ethernet headers except payload)
 	ef.payload = data[14:]
 
 	return ef
@@ -157,4 +178,5 @@ func main() {
 
 	ethernetFrame := parseEthernetFrame(data[40:])
 	fmt.Printf("ethernetFrame\nmac_dest:  %#v\nmac_src: %#v\nethertype: %#v\n\n", ethernetFrame.mac_dest, ethernetFrame.mac_src, ethernetFrame.ethertype)
+	fmt.Printf("ethernetFrame payload length: %d\n", len(ethernetFrame.payload))
 }
