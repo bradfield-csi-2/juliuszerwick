@@ -132,7 +132,7 @@ func parseEthernetFrame(data []byte) ethernet_frame {
 	//ef.payload = binary.BigEndian.Uint64(data[14:])
 	// Payload below is WRONG!
 	// Should be payload = packet_header.length - (14 bytes from ethernet headers except payload)
-	ef.payload = data[14:]
+	//ef.payload = data[14:]
 
 	return ef
 }
@@ -246,9 +246,13 @@ func main() {
 		fmt.Printf("pph: %#v\n\n", pph)
 		fmt.Printf("packetLength: %#v\n\n", packetLength)
 
-		ethernetStart := packetStart + 16 + 4
+		ethernetStart := packetStart + 16
 		ethernetFrame := parseEthernetFrame(data[ethernetStart:(ethernetStart + 14)])
 		fmt.Printf("ethernetFrame\nmac_dest:  %#v\nmac_src: %#v\nethertype: %#v\n\n", ethernetFrame.mac_dest, ethernetFrame.mac_src, ethernetFrame.ethertype)
-		fmt.Printf("ethernetFrame payload length: %d\n", len(ethernetFrame.payload))
+		//fmt.Printf("ethernetFrame payload length: %d\n", len(ethernetFrame.payload))
+
+		ipStart := ethernetStart + 14
+		ipHeader := parseIPHeader(data[ipStart:])
+		fmt.Printf("ipHeader: %#v\n\n", ipHeader)
 	}
 }
