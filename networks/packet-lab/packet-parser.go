@@ -182,9 +182,15 @@ func parseHTTPData(data []byte) (string, string) {
 	// Combine bytes into a single binary string.
 	//str := ""
 	//for _, b := range data {
-	//	binStr := strconv.FormatUint(b, 2)
+	//	byteArr := []byte{b}
+	//	bin := binary.BigEndian.Uint16(byteArr)
+	//	binStr := strconv.FormatUint(uint64(bin), 2)
 	//	str += binStr
 	//}
+
+	bin := Bytes2Bits(data)
+	str := fmt.Sprint(bin)
+	//str := string(bin)
 
 	// Grab HTTP status line and headers by reading up to CR LF CR LF
 	// CR has ASCII value of 13 -> 0b00001101
@@ -192,7 +198,19 @@ func parseHTTPData(data []byte) (string, string) {
 
 	// Grab HTTP response body containing data by getting all data after CR LF CR LF
 
-	return "", ""
+	return str, ""
+}
+
+func Bytes2Bits(data []byte) []int {
+	dst := make([]int, 0)
+	for _, v := range data {
+		for i := 0; i < 8; i++ {
+			move := uint(7 - i)
+			dst = append(dst, int((v>>move)&1))
+		}
+	}
+	fmt.Println(len(dst))
+	return dst
 }
 
 func countPackets(data []byte) int {
@@ -284,4 +302,6 @@ func main() {
 	}
 
 	fmt.Printf("httpData: %#v\n\n", httpData)
+	httpHeader, _ := parseHTTPData(httpData)
+	fmt.Printf("httpHeader: %v\n", httpHeader)
 }
