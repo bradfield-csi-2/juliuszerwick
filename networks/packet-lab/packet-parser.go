@@ -85,7 +85,7 @@ type tcp_header struct {
 	dst_port []byte
 	seq_num  []byte
 	//ack_num     uint32
-	data_offset []byte
+	data_offset uint8
 	//reserved    []byte
 	flags []byte
 	syn   uint8
@@ -142,7 +142,9 @@ func parseIPHeader(data []byte) ip_header {
 
 	firstByte := data[0:1]
 
+	// Below bitwise operation obtains high order 4 bits.
 	ipHeader.version = firstByte[0] >> 4
+	// Below bitwise operation obtains low order 4 bits.
 	ipHeader.ihl = firstByte[0] & 0x0f
 	ipHeader.total_length = data[2:4]
 	ipHeader.protocol = data[9:10]
@@ -159,7 +161,7 @@ func parseTCPHeader(data []byte) tcp_header {
 	tcpHeader.dst_port = data[2:4]
 	tcpHeader.seq_num = data[4:8]
 	// Data offset is the high order 4 bits of byte.
-	tcpHeader.data_offset = data[12:13]
+	tcpHeader.data_offset = data[12:13][0] >> 4
 	// SYN flag will be the second to last bit in byte.
 	// If bit is 1 then SYN is set and packet is the first in the sequence.
 	// If bit is 0 then SYN is not set and packet is not the first in the sequence.
