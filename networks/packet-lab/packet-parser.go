@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	_ "strconv"
 )
 
 // Magic number of net.cap file is 0xd4c3b2a1
@@ -63,8 +64,8 @@ type ethernet_frame struct {
 }
 
 type ip_header struct {
-	version []byte
-	ihl     []byte
+	version uint8
+	ihl     uint8
 	//dscp            []byte
 	//ecn             []byte
 	total_length []byte
@@ -72,21 +73,22 @@ type ip_header struct {
 	//flags           []byte
 	//fragment_offset []byte
 	//ttl             uint8
-	protocol uint8
+	protocol []byte
 	//header_checksum uint16
-	src_ip  uint32
-	dest_ip uint32
+	src_ip []byte
+	dst_ip []byte
 	//options         []byte
 }
 
 type tcp_header struct {
-	src_port  uint16
-	dest_port uint16
-	seq_num   uint32
+	src_port []byte
+	dst_port []byte
+	seq_num  []byte
 	//ack_num     uint32
 	data_offset []byte
 	//reserved    []byte
 	flags []byte
+	syn   uint8
 	//window_size uint16
 	//checksum    uint16
 	//urg_pointer uint16
@@ -136,19 +138,51 @@ func parseEthernetFrame(data []byte) ethernet_frame {
 }
 
 func parseIPHeader(data []byte) ip_header {
+	ipHeader := ip_header{}
+
+	firstByte := data[0:1]
+
+	ipHeader.version = firstByte[0] >> 4
+	ipHeader.ihl = firstByte[0] & 0x0f
+	ipHeader.total_length = data[2:4]
+	ipHeader.protocol = data[9:10]
+	ipHeader.src_ip = data[12:16]
+	ipHeader.dst_ip = data[16:20]
+
+	return ipHeader
 }
 
 func parseTCPHeader(data []byte) tcp_header {
+	tcpHeader := tcp_header{}
+
+	tcpHeader.src_port = data[0:2]
+	tcpHeader.dst_port = data[2:4]
+	tcpHeader.seq_num = data[4:8]
+	// Data offset is the high order 4 bits of byte.
+	tcpHeader.data_offset = data[12:13]
+	// SYN flag will be the second to last bit in byte.
+	// If bit is 1 then SYN is set and packet is the first in the sequence.
+	// If bit is 0 then SYN is not set and packet is not the first in the sequence.
+	// Use bitwise operator to check if SYN flag is set?
+	tcpHeader.flags = data[13:14]
+
+	if (tcpHeader.flags[0] & 0x2) == 2 {
+		tcpHeader.syn = 1
+	} else {
+		tcpHeader.syn = 0
+	}
+
+	return tcpHeader
 }
 
 func parseHTTPData(data []byte) (string, string) {
 
 	// Combine bytes into a single binary string.
-	str := ""
-	for _, b := range data {
-		binStr := strconv.ParseUint(b, 2)
-		str += binStr
-	}
+	//str := ""
+	//for _, b := range data {
+	//	binStr := strconv.FormatUint(b, 2)
+	//	str += binStr
+	//}
 
 	// Grab HTTP status line and headers by reading up to CR LF CR LF
 	// CR has ASCII value of 13 -> 0b00001101
@@ -156,6 +190,7 @@ func parseHTTPData(data []byte) (string, string) {
 
 	// Grab HTTP response body containing data by getting all data after CR LF CR LF
 
+	return "", ""
 }
 
 func countPackets(data []byte) int {
