@@ -203,7 +203,6 @@ func countPackets(data []byte) int {
 	for i = 0; i < length; {
 		// Parse the data in the pcap per packet header.
 		packetHeader := parsePacketHeader(data[i : i+16])
-		//fmt.Printf("packet_header: %#v\n\n", packetHeader)
 
 		// Verify that packet lengths are the same.
 		if packetHeader.length != packetHeader.ut_length {
@@ -236,7 +235,20 @@ func main() {
 		fmt.Printf("ERROR: Only counted %d packets in file.\n\n", numPackets)
 	}
 
-	ethernetFrame := parseEthernetFrame(data[40:])
-	fmt.Printf("ethernetFrame\nmac_dest:  %#v\nmac_src: %#v\nethertype: %#v\n\n", ethernetFrame.mac_dest, ethernetFrame.mac_src, ethernetFrame.ethertype)
-	fmt.Printf("ethernetFrame payload length: %d\n", len(ethernetFrame.payload))
+	// Parse packets in a loop.
+	//for i := 0; i < 99; i++ {
+
+	packetStart := 24
+	for i := 0; i < 1; i++ {
+		// Parse per-packet pcap header.
+		pph := parsePacketHeader(data[packetStart:(packetStart + 16)])
+		packetLength := pph.length
+		fmt.Printf("pph: %#v\n\n", pph)
+		fmt.Printf("packetLength: %#v\n\n", packetLength)
+
+		ethernetStart := packetStart + 16 + 4
+		ethernetFrame := parseEthernetFrame(data[ethernetStart:(ethernetStart + 14)])
+		fmt.Printf("ethernetFrame\nmac_dest:  %#v\nmac_src: %#v\nethertype: %#v\n\n", ethernetFrame.mac_dest, ethernetFrame.mac_src, ethernetFrame.ethertype)
+		fmt.Printf("ethernetFrame payload length: %d\n", len(ethernetFrame.payload))
+	}
 }
