@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	_ "strconv"
 )
 
@@ -177,7 +178,7 @@ func parseTCPHeader(data []byte) tcp_header {
 	return tcpHeader
 }
 
-func parseHTTPData(data []byte) (string, string) {
+func parseHTTPData(data []byte) string {
 
 	// Combine bytes into a single binary string.
 	//str := ""
@@ -198,7 +199,7 @@ func parseHTTPData(data []byte) (string, string) {
 
 	// Grab HTTP response body containing data by getting all data after CR LF CR LF
 
-	return str, ""
+	return str
 }
 
 func Bytes2Bits(data []byte) []int {
@@ -302,6 +303,18 @@ func main() {
 	}
 
 	fmt.Printf("httpData: %#v\n\n", httpData)
-	httpHeader, _ := parseHTTPData(httpData)
-	fmt.Printf("httpHeader: %v\n", httpHeader)
+	httpDataString := parseHTTPData(httpData)
+	fmt.Printf("httpHeader: %v\n", httpDataString)
+
+	// Write HTTP data to a file.
+	f, err := os.Create("packet.jpg")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	_, err = f.WriteString(httpDataString)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
