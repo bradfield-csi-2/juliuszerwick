@@ -243,12 +243,14 @@ func main() {
 	//	- work on ordering by sequence number later
 	httpData := make([]byte, 2)
 	packetStart := 24
-	for i := 0; i < 2; i++ {
+	//for i := 0; i < 6; i++ {
+	for i := 1; i < 100; i++ {
+		fmt.Printf("PACKET #%d\n\n", i)
 		// Parse per-packet pcap header.
 		pph := parsePacketHeader(data[packetStart:(packetStart + 16)])
 		packetLength := pph.length
 		fmt.Printf("pph: %#v\n\n", pph)
-		fmt.Printf("packetLength: %#v\n\n", packetLength)
+		fmt.Printf("packetLength: %v\n\n", packetLength)
 
 		ethernetStart := packetStart + 16
 		ethernetFrame := parseEthernetFrame(data[ethernetStart:(ethernetStart + 14)])
@@ -265,17 +267,20 @@ func main() {
 		fmt.Printf("tcpHeader: %#v\n\n", tcpHeader)
 
 		if tcpHeader.syn == 1 {
-			packetStart = tcpStart + ((int(tcpHeader.data_offset) * 32) / 8)
+			//packetStart = tcpStart + ((int(tcpHeader.data_offset) * 32) / 8)
+			packetStart += 16 + int(packetLength)
 			fmt.Printf("loop end packetStart = %v\n\n", packetStart)
 			continue
 		}
 
-		ipTotalLength := binary.BigEndian.Uint64(ipHeader.total_length)
+		ipTotalLength := binary.BigEndian.Uint16(ipHeader.total_length)
 		fmt.Printf("ipTotalLength = %v\n\n", ipTotalLength)
 		httpStart := tcpStart + ((int(tcpHeader.data_offset) * 32) / 8)
-		httpEnd := int(ipTotalLength) - (int(ipHeader.ihl) * 4) - httpStart
+		//httpEnd := int(ipTotalLength) - (int(ipHeader.ihl) * 4) - httpStart
+		httpEnd := httpStart + int(packetLength)
 		httpData = append(httpData, data[httpStart:httpEnd]...)
-		packetStart = httpEnd
+		//packetStart = httpEnd
+		packetStart += 16 + int(packetLength)
 	}
 
 	fmt.Printf("httpData: %#v\n\n", httpData)
