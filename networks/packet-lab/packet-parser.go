@@ -254,5 +254,10 @@ func main() {
 		ipStart := ethernetStart + 14
 		ipHeader := parseIPHeader(data[ipStart:])
 		fmt.Printf("ipHeader: %#v\n\n", ipHeader)
+
+		tcpStart := ipStart + (int(ipHeader.ihl) * 4)
+		fmt.Printf("IHL: %v\n\n", ipHeader.ihl)
+		tcpHeader := parseTCPHeader(data[tcpStart:])
+		fmt.Printf("tcpHeader: %#v\n\n", tcpHeader)
 	}
 }
