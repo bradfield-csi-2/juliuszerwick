@@ -241,9 +241,9 @@ func main() {
 	//httpData := make(map[int]
 	// Use below rudimentary storage to just work on http parsing logic
 	//	- work on ordering by sequence number later
-	//httpData := make([]byte)
+	httpData := make([]byte, 2)
 	packetStart := 24
-	for i := 0; i < 1; i++ {
+	for i := 0; i < 2; i++ {
 		// Parse per-packet pcap header.
 		pph := parsePacketHeader(data[packetStart:(packetStart + 16)])
 		packetLength := pph.length
@@ -269,5 +269,14 @@ func main() {
 			fmt.Printf("loop end packetStart = %v\n\n", packetStart)
 			continue
 		}
+
+		ipTotalLength := binary.BigEndian.Uint64(ipHeader.total_length)
+		fmt.Printf("ipTotalLength = %v\n\n", ipTotalLength)
+		httpStart := tcpStart + ((int(tcpHeader.data_offset) * 32) / 8)
+		httpEnd := int(ipTotalLength) - (int(ipHeader.ihl) * 4) - httpStart
+		httpData = append(httpData, data[httpStart:httpEnd]...)
+		packetStart = httpEnd
 	}
+
+	fmt.Printf("httpData: %#v\n\n", httpData)
 }
