@@ -63,34 +63,34 @@ type ethernet_frame struct {
 }
 
 type ip_header struct {
-	version         []byte
-	ihl             []byte
-	dscp            []byte
-	ecn             []byte
-	total_length    []byte
-	id              []byte
-	flags           []byte
-	fragment_offset []byte
-	ttl             uint8
-	protocol        uint8
-	header_chechsum uint16
-	src_ip          uint32
-	dest_ip         uint32
-	options         []byte
+	version []byte
+	ihl     []byte
+	//dscp            []byte
+	//ecn             []byte
+	total_length []byte
+	//id              []byte
+	//flags           []byte
+	//fragment_offset []byte
+	//ttl             uint8
+	protocol uint8
+	//header_checksum uint16
+	src_ip  uint32
+	dest_ip uint32
+	//options         []byte
 }
 
 type tcp_header struct {
-	src_port    uint16
-	dest_port   uint16
-	seq_num     uint32
-	ack_num     uint32
+	src_port  uint16
+	dest_port uint16
+	seq_num   uint32
+	//ack_num     uint32
 	data_offset []byte
-	reserved    []byte
-	flags       []byte
-	window_size uint16
-	checksum    uint16
-	urg_pointer uint16
-	options     []byte
+	//reserved    []byte
+	flags []byte
+	//window_size uint16
+	//checksum    uint16
+	//urg_pointer uint16
+	//options     []byte
 }
 
 func parsePcapHeader(data []byte) pcap_file_header {
@@ -133,6 +133,29 @@ func parseEthernetFrame(data []byte) ethernet_frame {
 	ef.payload = data[14:]
 
 	return ef
+}
+
+func parseIPHeader(data []byte) ip_header {
+}
+
+func parseTCPHeader(data []byte) tcp_header {
+}
+
+func parseHTTPData(data []byte) (string, string) {
+
+	// Combine bytes into a single binary string.
+	str := ""
+	for _, b := range data {
+		binStr := strconv.ParseUint(b, 2)
+		str += binStr
+	}
+
+	// Grab HTTP status line and headers by reading up to CR LF CR LF
+	// CR has ASCII value of 13 -> 0b00001101
+	// LF has ASCII value of 10 -> 0b00001010
+
+	// Grab HTTP response body containing data by getting all data after CR LF CR LF
+
 }
 
 func countPackets(data []byte) int {
