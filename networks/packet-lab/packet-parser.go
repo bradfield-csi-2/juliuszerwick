@@ -238,6 +238,10 @@ func main() {
 	// Parse packets in a loop.
 	//for i := 0; i < 99; i++ {
 
+	//httpData := make(map[int]
+	// Use below rudimentary storage to just work on http parsing logic
+	//	- work on ordering by sequence number later
+	//httpData := make([]byte)
 	packetStart := 24
 	for i := 0; i < 1; i++ {
 		// Parse per-packet pcap header.
@@ -259,5 +263,11 @@ func main() {
 		fmt.Printf("IHL: %v\n\n", ipHeader.ihl)
 		tcpHeader := parseTCPHeader(data[tcpStart:])
 		fmt.Printf("tcpHeader: %#v\n\n", tcpHeader)
+
+		if tcpHeader.syn == 1 {
+			packetStart = tcpStart + ((int(tcpHeader.data_offset) * 32) / 8)
+			fmt.Printf("loop end packetStart = %v\n\n", packetStart)
+			continue
+		}
 	}
 }
