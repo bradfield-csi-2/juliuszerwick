@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
+	_ "os"
 	_ "strconv"
 )
 
@@ -262,6 +262,7 @@ func main() {
 	//	- work on ordering by sequence number later
 	httpData := make([]byte, 2)
 	packetStart := 24
+	sliceSeqNums := make([]uint32, 99)
 	//for i := 0; i < 6; i++ {
 	for i := 1; i < 100; i++ {
 		fmt.Printf("PACKET #%d\n\n", i)
@@ -294,6 +295,9 @@ func main() {
 
 		ipTotalLength := binary.BigEndian.Uint16(ipHeader.total_length)
 		fmt.Printf("ipTotalLength = %v\n\n", ipTotalLength)
+		seqNum := binary.BigEndian.Uint32(tcpHeader.seq_num)
+		fmt.Printf("seqNum = %v\n\n", seqNum)
+		sliceSeqNums = append(sliceSeqNums, seqNum)
 		httpStart := tcpStart + ((int(tcpHeader.data_offset) * 32) / 8)
 		//httpEnd := int(ipTotalLength) - (int(ipHeader.ihl) * 4) - httpStart
 		httpEnd := httpStart + int(packetLength)
@@ -302,19 +306,21 @@ func main() {
 		packetStart += 16 + int(packetLength)
 	}
 
-	fmt.Printf("httpData: %#v\n\n", httpData)
-	httpDataString := parseHTTPData(httpData)
-	fmt.Printf("httpHeader: %v\n", httpDataString)
+	fmt.Printf("sliceSeqNums: %v\n\n", sliceSeqNums)
+
+	//fmt.Printf("httpData: %#v\n\n", httpData)
+	//httpDataString := parseHTTPData(httpData)
+	//fmt.Printf("httpHeader: %v\n", httpDataString)
 
 	// Write HTTP data to a file.
-	f, err := os.Create("packet.jpg")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
-
-	_, err = f.WriteString(httpDataString)
-	if err != nil {
-		log.Fatal(err)
-	}
+	//	f, err := os.Create("packet.jpg")
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
+	//	defer f.Close()
+	//
+	//	_, err = f.WriteString(httpDataString)
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
 }
