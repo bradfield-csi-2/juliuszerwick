@@ -63,4 +63,10 @@ type resource_record struct {
 
 func main() {
 	fmt.Printf("Welcome to our DNS client!\n\n")
+
+	// Creating a socket for UDP and IPv4.
+	c, err := Dial("udp4", domainName)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
