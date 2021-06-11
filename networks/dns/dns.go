@@ -104,3 +104,27 @@ func main() {
 
 	fmt.Println(string(resp))
 }
+
+func (dm dns_message) Marshal() (payload []byte, err error) {
+	payload, err := dm.header.Marshal()
+	if err != nil {
+		err = errors.Wrapf(err, "failure to marshal header into payload %+v", dm.header)
+		return nil, err
+	}
+
+	questionPayload, err := dm.question.Marshal()
+	if err != nil {
+		err = errors.Wrapf(err, "failure to marshal question into payload %+v", dm.question)
+		return nil, err
+	}
+
+	payload = append(payload, questionPayload)
+
+	return payload, nil
+}
+
+func (h header) Marshal() (payload []byte, err error) {
+}
+
+func (q question) Marshal() (payload []byte, err error) {
+}
