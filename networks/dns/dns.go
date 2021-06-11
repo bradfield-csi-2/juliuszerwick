@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"net"
+
+	"github.com/pkg/errors"
 )
 
 var (
@@ -12,11 +14,9 @@ var (
 )
 
 type dns_message struct {
-	header     header
-	question   question
-	answer     []resource_record
-	authority  []resource_record
-	additional []resource_record
+	header   header
+	question question
+	answer   []*rr
 }
 
 type header struct {
@@ -55,9 +55,22 @@ func main() {
 
 	dnsMsg := dns_message{
 		header: {
-			id:     uint16(1),
-			qr:     uint8(0),
+			id: 1,
+			// Value of 0 specifies a query.
+			qr: 0,
+			// Value of 0 specifies a standard query.
 			opcode: 0,
+			// Number of entries in the question section.
+			qdcount: 1,
+			// Value of 1 indicates that we desire a recursive query.
+			rd: 1,
+		},
+		question: {
+			qname: domainName,
+			// QYTPE A - host address - value of 1
+			qtype: 1,
+			// QCLASS IN - Internet - value of 1
+			qclass: 1,
 		},
 	}
 
@@ -68,9 +81,18 @@ func main() {
 	}
 	defer c.Close()
 
+	payload, err := dnsMsg.Marshal()
+	if err != nil {
+		err = errors.Wrapf(err, "failure to marshal dnsMsg into paylaod %+v", dnsMsg)
+		log.Fatal(err)
+	}
+
+	fmt.Printf("dnsMsg sent %s\n", string(payload))
+
 	// Write DNS request to Conn instance c.
 	_, err := c.Write()
 	if err != nil {
+		err = errors.Wrapf(err, "failure to write payload to conn%+v", dnsMsg)
 		log.Fatal(err)
 	}
 
