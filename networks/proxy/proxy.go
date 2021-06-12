@@ -47,8 +47,6 @@ func readRequest(fd int, buf []byte) (int, error) {
 }
 
 func main() {
-	//	ns := &netSocket{}
-
 	// Create a socket.
 	fd, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_STREAM, 0)
 	if err != nil {
@@ -81,25 +79,21 @@ func main() {
 		if err != nil {
 			log.Fatalf("failed to accept connection - err: %v\n", err)
 		}
-		//if err == nil {
-		//	fmt.Printf("Before CloseOnExec\n\n")
-		//	syscall.CloseOnExec(nfd)
-		//}
 
 		fmt.Printf("Accepted connection!\n\n")
 
 		// Read request and print.
-		buf := []byte{}
-		_, err = readRequest(nfd, buf)
+		// Allocate enough bytes to receive data sent over socket.
+		buf := make([]byte, 1000)
+		r, err := readRequest(nfd, buf)
 		if err != nil {
 			log.Fatalf("failed to read request - err: %v\n", err)
 		}
-		fmt.Printf("Reading:\n%v\n\n", buf)
 
 		// Write response.
 		fmt.Printf("Writing response\n\n")
-		sendBuf := []byte("Welcome to my server!")
-		_, err = syscall.Write(nfd, sendBuf)
+		// Echo back bytes received.
+		_, err = syscall.Write(nfd, buf[:r])
 		if err != nil {
 			log.Fatalf("failed to write response - err: %v\n", err)
 		}
