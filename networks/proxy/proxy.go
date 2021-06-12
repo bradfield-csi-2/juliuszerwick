@@ -37,10 +37,13 @@ type request struct {
 //	return syscall.Close(ns.fd)
 //}
 
-func readRequest(fd int) (*request, error) {
-	req := new(request)
+func readRequest(fd int, buf []byte) (int, error) {
+	n, err := syscall.Read(fd, buf)
+	if err != nil {
+		return 0, err
+	}
 
-	return req, nil
+	return n, nil
 }
 
 func main() {
@@ -77,18 +80,28 @@ func main() {
 		fmt.Printf("Called Accept\n\n")
 		if err != nil {
 			log.Fatalf("failed to accept connection - err: %v\n", err)
-			if err == nil {
-				fmt.Printf("Before CloseOnExec\n\n")
-				syscall.CloseOnExec(nfd)
-			}
+		}
+		//if err == nil {
+		//	fmt.Printf("Before CloseOnExec\n\n")
+		//	syscall.CloseOnExec(nfd)
+		//}
 
-			fmt.Printf("Accepted connection!\n\n")
+		fmt.Printf("Accepted connection!\n\n")
 
-			// Read request and print.
-			//_, err := readRequest(nfd)
-			//if err != nil {
-			//	log.Fatalf("failed to read request - err: %v\n", err)
-			//}
+		// Read request and print.
+		buf := []byte{}
+		_, err = readRequest(nfd, buf)
+		if err != nil {
+			log.Fatalf("failed to read request - err: %v\n", err)
+		}
+		fmt.Printf("Reading:\n%v\n\n", buf)
+
+		// Write response.
+		fmt.Printf("Writing response\n\n")
+		sendBuf := []byte("Welcome to my server!")
+		_, err = syscall.Write(nfd, sendBuf)
+		if err != nil {
+			log.Fatalf("failed to write response - err: %v\n", err)
 		}
 	}
 }
