@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 
@@ -124,6 +126,19 @@ func (dm dns_message) Marshal() (payload []byte, err error) {
 }
 
 func (h header) Marshal() (payload []byte, err error) {
+	var (
+		buf       = new(bytes.Buffer)
+		h_1 uint8 = 0
+		h_2 uint8 = 0
+	)
+
+	binary.Write(buf, binary.BigEndian, h.id)
+
+	h_1 = h.qr << 7
+	h_1 |= byte(h.opcode) << 3
+	h_1 |= h.aa << 2
+	h_1 |= h.tc << 1
+	h_1 |= h.rd << 0
 }
 
 func (q question) Marshal() (payload []byte, err error) {
