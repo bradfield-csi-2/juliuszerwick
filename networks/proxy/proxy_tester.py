@@ -30,7 +30,8 @@ class timeout_after:
 
 
 class BaseTest(unittest.TestCase):
-    PROXY_LOCATION = None  # set (host, port) before running
+    # set (host, port) before running
+    PROXY_LOCATION = ('127.0.0.01', '8000')
 
 
 class HttpRequestTest(BaseTest):
