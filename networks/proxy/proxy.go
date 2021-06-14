@@ -73,13 +73,10 @@ func main() {
 	// Wait for incoming connections.
 	for {
 		// Accept connection.
-		fmt.Printf("Before Accept\n\n")
 		nfd, _, err := syscall.Accept(fd)
-		fmt.Printf("Called Accept\n\n")
 		if err != nil {
 			log.Fatalf("failed to accept connection - err: %v\n", err)
 		}
-
 		fmt.Printf("Accepted connection!\n\n")
 
 		// Read request and print.
@@ -89,10 +86,11 @@ func main() {
 		if err != nil {
 			log.Fatalf("failed to read request - err: %v\n", err)
 		}
+		fmt.Printf("Read request...\n\n")
 
 		// Write response.
-		fmt.Printf("Writing response\n\n")
-		// Echo back bytes received.
+		fmt.Printf("Writing response...\n\n")
+		// Echo back bytes received from start of byte array up to number of bytes read.
 		_, err = syscall.Write(nfd, buf[:r])
 		if err != nil {
 			log.Fatalf("failed to write response - err: %v\n", err)
