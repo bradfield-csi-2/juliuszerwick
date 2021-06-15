@@ -55,13 +55,6 @@ func main() {
 	}
 	defer syscall.Close(fdClient)
 
-	// Create a socket to use for outbound connections to the web server.
-	fdServer, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_STREAM, 0)
-	if err != nil {
-		log.Fatalf("failed to create socket - err: %v\n", err)
-	}
-	defer syscall.Close(fdServer)
-
 	// Bind to socket for pending connections from clients.
 	sAddrClient := &syscall.SockaddrInet4{Port: clientPort}
 	copy(sAddrClient.Addr[:], localHost)
@@ -69,9 +62,6 @@ func main() {
 		log.Fatalf("failed to bind to socket on port %d - err: %v\n", clientPort, err)
 	}
 
-	// Create addr for outbound connections to the web server.
-	sAddrServer := &syscall.SockaddrInet4{Port: serverPort}
-	copy(sAddrServer.Addr[:], localHost)
 	//if err = syscall.Bind(fdServer, sAddrServer); err != nil {
 	//	log.Fatalf("failed to bind to socket on port %d - err: %v\n", serverPort, err)
 	//}
@@ -117,6 +107,16 @@ func main() {
 		// Connect to web server.
 		fmt.Printf("Writing response...\n\n")
 		//_, err = syscall.Write(nfdServer, buf[:r])
+		// Create addr for outbound connections to the web server.
+		sAddrServer := &syscall.SockaddrInet4{Port: serverPort}
+		copy(sAddrServer.Addr[:], localHost)
+
+		// Create a socket to use for outbound connections to the web server.
+		fdServer, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_STREAM, 0)
+		if err != nil {
+			log.Fatalf("failed to create socket - err: %v\n", err)
+		}
+
 		err = syscall.Connect(fdServer, sAddrServer)
 		if err != nil {
 			log.Fatalf("failed to connect to web server - err: %v\n", err)
@@ -127,5 +127,6 @@ func main() {
 		if err != nil {
 			log.Fatalf("failed to write response - err: %v\n", err)
 		}
+		syscall.Close(fdServer)
 	}
 }
