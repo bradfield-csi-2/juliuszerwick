@@ -10,7 +10,7 @@ import (
 
 var (
 	clientPort int    = 8000
-	serverPort int    = 8001
+	serverPort int    = 9000 //8001
 	localHost  net.IP = net.ParseIP("127.0.0.1")
 )
 
@@ -48,63 +48,64 @@ func readRequest(fd int, buf []byte) (int, error) {
 }
 
 func main() {
-	// Create a socket for client + proxy.
+	// Create a socket to use for receiving pending connections from clients.
 	fdClient, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_STREAM, 0)
 	if err != nil {
 		log.Fatalf("failed to create socket - err: %v\n", err)
 	}
 	defer syscall.Close(fdClient)
 
-	// Create a socket for proxy + web server.
+	// Create a socket to use for outbound connections to the web server.
 	fdServer, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_STREAM, 0)
 	if err != nil {
 		log.Fatalf("failed to create socket - err: %v\n", err)
 	}
 	defer syscall.Close(fdServer)
 
-	// Bind to sockets.
+	// Bind to socket for pending connections from clients.
 	sAddrClient := &syscall.SockaddrInet4{Port: clientPort}
 	copy(sAddrClient.Addr[:], localHost)
 	if err = syscall.Bind(fdClient, sAddrClient); err != nil {
 		log.Fatalf("failed to bind to socket on port %d - err: %v\n", clientPort, err)
 	}
 
+	// Create addr for outbound connections to the web server.
 	sAddrServer := &syscall.SockaddrInet4{Port: serverPort}
 	copy(sAddrServer.Addr[:], localHost)
-	if err = syscall.Bind(fdServer, sAddrServer); err != nil {
-		log.Fatalf("failed to bind to socket on port %d - err: %v\n", serverPort, err)
-	}
+	//if err = syscall.Bind(fdServer, sAddrServer); err != nil {
+	//	log.Fatalf("failed to bind to socket on port %d - err: %v\n", serverPort, err)
+	//}
 
-	// Listen for connections on socket.
+	// Listen for incoming connections from clients on socket.
 	if err = syscall.Listen(fdClient, syscall.SOMAXCONN); err != nil {
 		log.Fatalf("failed to listen on socket - err: %v\n", err)
 	}
 
-	if err = syscall.Listen(fdServer, syscall.SOMAXCONN); err != nil {
-		log.Fatalf("failed to listen on socket - err: %v\n", err)
-	}
+	//if err = syscall.Listen(fdServer, syscall.SOMAXCONN); err != nil {
+	//	log.Fatalf("failed to listen on socket - err: %v\n", err)
+	//}
 
 	// Accept connection to web server before accepting connections with clients.
-	nfdServer, _, err := syscall.Accept(fdServer)
-	if err != nil {
-		log.Fatalf("failed to accept connection - err: %v\n", err)
-	}
-	fmt.Printf("Connected to web server!\n\n")
+	//nfdServer, _, err := syscall.Accept(fdServer)
+	//if err != nil {
+	//	log.Fatalf("failed to accept connection - err: %v\n", err)
+	//}
+	//fmt.Printf("Connected to web server!\n\n")
 
 	fmt.Printf("=======================\n")
-	fmt.Printf("Server is started!\n")
+	fmt.Printf("Proxy is started!\n")
 	fmt.Printf("=======================\n\n")
 
 	// Wait for incoming connections.
 	for {
-		// Accept connection.
+		// Accept incoming connection from a client.
 		nfdClient, _, err := syscall.Accept(fdClient)
 		if err != nil {
 			log.Fatalf("failed to accept connection - err: %v\n", err)
 		}
 		fmt.Printf("Accepted connection!\n\n")
 
-		// Read request and print.
+		// Read request from client and store into a byte array.
 		// Allocate enough bytes to receive data sent over socket.
 		buf := make([]byte, 1000)
 		r, err := readRequest(nfdClient, buf)
@@ -113,10 +114,16 @@ func main() {
 		}
 		fmt.Printf("Read request...\n\n")
 
-		// Write response.
+		// Connect to web server.
 		fmt.Printf("Writing response...\n\n")
-		// Echo back bytes received from start of byte array up to number of bytes read.
-		_, err = syscall.Write(nfdServer, buf[:r])
+		//_, err = syscall.Write(nfdServer, buf[:r])
+		err = syscall.Connect(fdServer, sAddrServer)
+		if err != nil {
+			log.Fatalf("failed to connect to web server - err: %v\n", err)
+		}
+
+		// Write request data to connection to send to web server.
+		_, err = syscall.Write(fdServer, buf[:r])
 		if err != nil {
 			log.Fatalf("failed to write response - err: %v\n", err)
 		}
