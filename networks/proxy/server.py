@@ -39,8 +39,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser('python3 server.py')
     parser.add_argument('--host', default='localhost',
                         help='Local interface, default "localhost"')
-    parser.add_argument('--port', default='8001',
-                        help='Port to listen on, default 8001')
+    parser.add_argument('--port', default='9000',
+                        help='Port to listen on, default 9000')
     parser.add_argument('--keepalive', default=False,
                         help='Run HTTP/1.1, so support persistent connections')
     args = parser.parse_args()

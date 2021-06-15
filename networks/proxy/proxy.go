@@ -66,13 +66,13 @@ func main() {
 	sAddrClient := &syscall.SockaddrInet4{Port: clientPort}
 	copy(sAddrClient.Addr[:], localHost)
 	if err = syscall.Bind(fdClient, sAddrClient); err != nil {
-		log.Fatalf("failed to bind to socket - err: %v\n", err)
+		log.Fatalf("failed to bind to socket on port %d - err: %v\n", clientPort, err)
 	}
 
 	sAddrServer := &syscall.SockaddrInet4{Port: serverPort}
 	copy(sAddrServer.Addr[:], localHost)
 	if err = syscall.Bind(fdServer, sAddrServer); err != nil {
-		log.Fatalf("failed to bind to socket - err: %v\n", err)
+		log.Fatalf("failed to bind to socket on port %d - err: %v\n", serverPort, err)
 	}
 
 	// Listen for connections on socket.
