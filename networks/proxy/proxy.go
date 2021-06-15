@@ -120,11 +120,16 @@ func main() {
 		}
 		fmt.Printf("Reading response from web server...\n\n")
 
+		//fmt.Printf("%v\n\n", buf2)
+		//fmt.Printf("%s\n\n", string(buf2))
+
 		// Write response data to connection to send to client.
 		_, err = syscall.Write(nfdClient, buf2[:r2])
 		if err != nil {
 			log.Fatalf("failed to write response to client - err: %v\n", err)
 		}
+
+		fmt.Printf("data sent back to client\n")
 
 		syscall.Close(fdServer)
 	}
