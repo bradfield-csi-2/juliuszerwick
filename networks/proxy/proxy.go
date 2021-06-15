@@ -62,25 +62,10 @@ func main() {
 		log.Fatalf("failed to bind to socket on port %d - err: %v\n", clientPort, err)
 	}
 
-	//if err = syscall.Bind(fdServer, sAddrServer); err != nil {
-	//	log.Fatalf("failed to bind to socket on port %d - err: %v\n", serverPort, err)
-	//}
-
 	// Listen for incoming connections from clients on socket.
 	if err = syscall.Listen(fdClient, syscall.SOMAXCONN); err != nil {
 		log.Fatalf("failed to listen on socket - err: %v\n", err)
 	}
-
-	//if err = syscall.Listen(fdServer, syscall.SOMAXCONN); err != nil {
-	//	log.Fatalf("failed to listen on socket - err: %v\n", err)
-	//}
-
-	// Accept connection to web server before accepting connections with clients.
-	//nfdServer, _, err := syscall.Accept(fdServer)
-	//if err != nil {
-	//	log.Fatalf("failed to accept connection - err: %v\n", err)
-	//}
-	//fmt.Printf("Connected to web server!\n\n")
 
 	fmt.Printf("=======================\n")
 	fmt.Printf("Proxy is started!\n")
@@ -102,11 +87,10 @@ func main() {
 		if err != nil {
 			log.Fatalf("failed to read request - err: %v\n", err)
 		}
-		fmt.Printf("Read request...\n\n")
+		fmt.Printf("Reading request from client...\n\n")
 
 		// Connect to web server.
-		fmt.Printf("Writing response...\n\n")
-		//_, err = syscall.Write(nfdServer, buf[:r])
+		fmt.Printf("Writing to web server...\n\n")
 		// Create addr for outbound connections to the web server.
 		sAddrServer := &syscall.SockaddrInet4{Port: serverPort}
 		copy(sAddrServer.Addr[:], localHost)
@@ -127,6 +111,21 @@ func main() {
 		if err != nil {
 			log.Fatalf("failed to write response - err: %v\n", err)
 		}
+
+		// Read data send back by server.
+		buf2 := make([]byte, 1000)
+		r2, err := readRequest(fdServer, buf2)
+		if err != nil {
+			log.Fatalf("failed to read response from web server - err: %v\n", err)
+		}
+		fmt.Printf("Reading response from web server...\n\n")
+
+		// Write response data to connection to send to client.
+		_, err = syscall.Write(nfdClient, buf2[:r2])
+		if err != nil {
+			log.Fatalf("failed to write response to client - err: %v\n", err)
+		}
+
 		syscall.Close(fdServer)
 	}
 }
