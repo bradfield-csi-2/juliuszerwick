@@ -53,19 +53,30 @@ func (o *skipListOC) Get(key string) (string, bool) {
 	//	continue
 	//}
 
-	for node.down != currentList.tail {
-		for node != currentList.tail && key > node.item.Key {
-			node = node.next
+	// Determine if next node in current list has key greater than provided key.
+	// If so, move down to next list if possible.
+	// Else, we are at the bottom list and have failed to find node with provided key.
+	for node != currentList.tail && key < node.item.key {
+		if headNode.down == nil {
+			return "", false
 		}
-
-		if node.item.Key != key && node.down != currentList.tail {
-			//	if i == 0 {
-			//		break
-			//	}
-
-			node = node.down
-		}
+		headNode = headNode.down
+		node = headNode.next
 	}
+
+	//for node.down != currentList.tail {
+	for node != currentList.tail && key > node.item.Key {
+		node = node.next
+	}
+
+	if node.item.Key != key && node.down != currentList.tail {
+		//	if i == 0 {
+		//		break
+		//	}
+
+		node = node.down
+	}
+	//}
 
 	for node != currentList.tail && key > node.item.Key {
 		node = node.next
