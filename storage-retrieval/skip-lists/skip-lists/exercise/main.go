@@ -112,7 +112,8 @@ func main() {
 	}
 
 	fmt.Printf("Testing using %d words (%s pattern)\n\n", limit, pattern)
-	fmt.Printf("%-25s%-20s%-20s%-20s%-20s\n", "Name", "Puts", "Deletes", "Gets") //, "RangeScan")
+	//fmt.Printf("%-25s%-20s%-20s%-20s%-20s\n", "Name", "Puts", "Deletes", "Gets", "RangeScan")
+	fmt.Printf("%-25s%-20s%-20s%-20s\n", "Name", "Puts", "Deletes", "Gets")
 	fmt.Printf("----------------------------------------------------------------------------------------------------\n")
 
 	for _, testCase := range []struct {

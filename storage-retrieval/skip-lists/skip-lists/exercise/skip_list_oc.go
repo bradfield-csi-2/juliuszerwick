@@ -1,16 +1,16 @@
 package main
 
-type linkedNode struct {
+type linkNode struct {
 	item Item
-	next *linkedNode
-	prev *linkedNode
-	up   *linkedNode
-	down *linkedNode
+	next *linkNode
+	prev *linkNode
+	up   *linkNode
+	down *linkNode
 }
 
 type list struct {
-	head *linkedNode
-	tail *linkedNode
+	head *linkNode
+	tail *linkNode
 }
 
 type skipListOC struct {
@@ -18,56 +18,57 @@ type skipListOC struct {
 }
 
 func newSkipListOC() *skipListOC {
-	head := &linkedNode{}
-	tail := &linkedNode{}
+	head := &linkNode{}
+	tail := &linkNode{}
 	head.next = tail
 	tail.prev = head
-	newList := list{
+	newList := &list{
 		head: head,
 		tail: tail,
 	}
 
 	return &skipListOC{
-		lists: []list{newList},
+		lists: []*list{newList},
 	}
 }
 
 func (o *skipListOC) Get(key string) (string, bool) {
 	// First, get the length of the skipListOC list.
 	// The length - 1 will be the max level to start at.
-	maxLevel := len(o) - 1
+	maxLevel := len(o.lists) - 1
 
-	// Iterate through linked lists in skip list from highest level to lowest.
-	// If we finish searching the lowest linked list without success, return "", false
-	for i := maxLevel; i >= 0; i-- {
-		// Iterate through linked list to find key and value.
-		currentList := o[i]
-		node = currentList.head.next
+	// Iterate through linked list to find key and value.
+	currentList := o.lists[maxLevel]
+	headNode := currentList.head
+	node := headNode.next
 
-		// If first node in list has a key greater than provided key,
-		// move onto the next list in the OC.
-		if node.next.item.Key > key {
-			// If we are already at the bottom list, then the key does not exit.
-			// Break out of for loop and return "", false
-			if i == 0 {
-				break
-			}
-			continue
-		}
-	}
+	// If first node in list has a key greater than provided key,
+	// move onto the next list in the OC.
+	//if node.item.Key > key {
+	//	// If we are already at the bottom list, then the key does not exit.
+	//	// Break out of for loop and return "", false
+	//	if i == 0 {
+	//		break
+	//	}
+	//	continue
+	//}
 
-	for {
+	for node.down != currentList.tail {
 		for node != currentList.tail && key > node.item.Key {
 			node = node.next
 		}
 
-		if node.item.Key != key {
-			if i == 0 {
-				break
-			}
+		if node.item.Key != key && node.down != currentList.tail {
+			//	if i == 0 {
+			//		break
+			//	}
 
 			node = node.down
 		}
+	}
+
+	for node != currentList.tail && key > node.item.Key {
+		node = node.next
 	}
 
 	if node != currentList.tail && node.item.Key == key {
