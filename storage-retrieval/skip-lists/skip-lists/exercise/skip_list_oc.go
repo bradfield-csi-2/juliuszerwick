@@ -40,8 +40,40 @@ func (o *skipListOC) Get(key string) (string, bool) {
 	// Iterate through linked lists in skip list from highest level to lowest.
 	// If we finish searching the lowest linked list without success, return "", false
 	for i := maxLevel; i >= 0; i-- {
-		// Iterate through linked list to find
+		// Iterate through linked list to find key and value.
+		currentList := o[i]
+		node = currentList.head.next
+
+		// If first node in list has a key greater than provided key,
+		// move onto the next list in the OC.
+		if node.next.item.Key > key {
+			// If we are already at the bottom list, then the key does not exit.
+			// Break out of for loop and return "", false
+			if i == 0 {
+				break
+			}
+			continue
+		}
 	}
+
+	for {
+		for node != currentList.tail && key > node.item.Key {
+			node = node.next
+		}
+
+		if node.item.Key != key {
+			if i == 0 {
+				break
+			}
+
+			node = node.down
+		}
+	}
+
+	if node != currentList.tail && node.item.Key == key {
+		return node.item.Value, true
+	}
+
 	return "", false
 }
 
