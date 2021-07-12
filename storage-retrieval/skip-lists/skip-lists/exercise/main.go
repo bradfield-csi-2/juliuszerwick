@@ -40,26 +40,28 @@ func runTest(words []string, o OC, name string) {
 	fmt.Printf("%-25s", name)
 
 	// Puts
-	start := time.Now()
-	for _, word := range words {
-		ok := o.Put(word, word)
-		if !ok {
-			log.Fatalf("Word %q shouldn't have been added yet\n", word)
-		}
-	}
-	fmt.Printf("%-20s", time.Since(start))
+	//	start := time.Now()
+	//	for _, word := range words {
+	//		ok := o.Put(word, word)
+	//		if !ok {
+	//			log.Fatalf("Word %q shouldn't have been added yet\n", word)
+	//		}
+	//	}
+	//	fmt.Printf("%-20s", time.Since(start))
+	fmt.Printf("%-20s\n", ".")
 
 	// Deletes
-	start = time.Now()
-	for i := 0; i < len(words); i += stride {
-		if !o.Delete(words[i]) {
-			log.Fatalf("Couldn't delete %q (not found)\n", words[i])
-		}
-	}
-	fmt.Printf("%-20s", time.Since(start))
+	//	start = time.Now()
+	//	for i := 0; i < len(words); i += stride {
+	//		if !o.Delete(words[i]) {
+	//			log.Fatalf("Couldn't delete %q (not found)\n", words[i])
+	//		}
+	//	}
+	//	fmt.Printf("%-20s", time.Since(start))
+	fmt.Printf("%-20s\n", ".")
 
 	// Gets
-	start = time.Now()
+	start := time.Now()
 	for i, word := range words {
 		value, ok := o.Get(word)
 		if i%stride == 0 && ok {
@@ -96,6 +98,7 @@ func runTest(words []string, o OC, name string) {
 	//	log.Fatalf("Inconsistent number of items from RangeScan: %d vs %d\n", expectedRangeScanItems, count)
 	//}
 	//fmt.Printf("%-20s\n", time.Since(start))
+	fmt.Printf("%-20s\n", ".")
 }
 
 func main() {
@@ -112,8 +115,8 @@ func main() {
 	}
 
 	fmt.Printf("Testing using %d words (%s pattern)\n\n", limit, pattern)
-	//fmt.Printf("%-25s%-20s%-20s%-20s%-20s\n", "Name", "Puts", "Deletes", "Gets", "RangeScan")
-	fmt.Printf("%-25s%-20s%-20s%-20s\n", "Name", "Puts", "Deletes", "Gets")
+	fmt.Printf("%-25s%-20s%-20s%-20s%-20s\n", "Name", "Puts", "Deletes", "Gets", "RangeScan")
+	//fmt.Printf("%-25s%-20s%-20s%-20s\n", "Name", "Puts", "Deletes", "Gets")
 	fmt.Printf("----------------------------------------------------------------------------------------------------\n")
 
 	for _, testCase := range []struct {
@@ -126,7 +129,7 @@ func main() {
 		{newBstOC(), "Binary Search Tree"},
 		{newRbTreeOC(), "Red Black Tree"},
 		// TODO: Uncomment this when you're ready!
-		// {newSkipListOC(), "Skip List"},
+		{newSkipListOC(), "Skip List"},
 	} {
 		if len(words) > limit {
 			words = words[:limit]
