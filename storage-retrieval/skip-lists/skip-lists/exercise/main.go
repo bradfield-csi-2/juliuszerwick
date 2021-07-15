@@ -40,28 +40,26 @@ func runTest(words []string, o OC, name string) {
 	fmt.Printf("%-25s", name)
 
 	// Puts
-	//	start := time.Now()
-	//	for _, word := range words {
-	//		ok := o.Put(word, word)
-	//		if !ok {
-	//			log.Fatalf("Word %q shouldn't have been added yet\n", word)
-	//		}
-	//	}
-	//	fmt.Printf("%-20s", time.Since(start))
-	fmt.Printf("%-20s\n", ".")
+	start := time.Now()
+	for _, word := range words {
+		ok := o.Put(word, word)
+		if !ok {
+			log.Fatalf("Word %q shouldn't have been added yet\n", word)
+		}
+	}
+	fmt.Printf("%-20s", time.Since(start))
 
 	// Deletes
-	//	start = time.Now()
-	//	for i := 0; i < len(words); i += stride {
-	//		if !o.Delete(words[i]) {
-	//			log.Fatalf("Couldn't delete %q (not found)\n", words[i])
-	//		}
-	//	}
-	//	fmt.Printf("%-20s", time.Since(start))
-	fmt.Printf("%-20s\n", ".")
+	start = time.Now()
+	for i := 0; i < len(words); i += stride {
+		if !o.Delete(words[i]) {
+			log.Fatalf("Couldn't delete %q (not found)\n", words[i])
+		}
+	}
+	fmt.Printf("%-20s", time.Since(start))
 
 	// Gets
-	start := time.Now()
+	start = time.Now()
 	for i, word := range words {
 		value, ok := o.Get(word)
 		if i%stride == 0 && ok {
@@ -129,7 +127,7 @@ func main() {
 		{newBstOC(), "Binary Search Tree"},
 		{newRbTreeOC(), "Red Black Tree"},
 		// TODO: Uncomment this when you're ready!
-		{newSkipListOC(), "Skip List"},
+		//{newSkipListOC(), "Skip List"},
 	} {
 		if len(words) > limit {
 			words = words[:limit]

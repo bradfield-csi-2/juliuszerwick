@@ -1,89 +1,45 @@
 package main
 
-type linkNode struct {
+type skipListNode struct {
 	item Item
-	next *linkNode
-	prev *linkNode
-	up   *linkNode
-	down *linkNode
-}
-
-type list struct {
-	head *linkNode
-	tail *linkNode
+	next []*skipListNode
 }
 
 type skipListOC struct {
-	lists []*list
+	head  *skipListNode
+	level int
 }
 
 func newSkipListOC() *skipListOC {
-	head := &linkNode{}
-	tail := &linkNode{}
-	head.next = tail
-	tail.prev = head
-	newList := &list{
-		head: head,
-		tail: tail,
-	}
-
 	return &skipListOC{
-		lists: []*list{newList},
+		head: &skipListNode{
+			next: []*skipListNode{nil},
+		},
+		level: 1,
 	}
 }
 
-func (o *skipListOC) Get(key string) (string, bool) {
-	// First, get the length of the skipListOC list.
-	// The length - 1 will be the max level to start at.
-	maxLevel := len(o.lists) - 1
+func (o *skipListOC) firstGet(key string, update []*skipListNode) *skipListNode {
+	x := o.head
 
-	// Iterate through linked list to find key and value.
-	currentList := o.lists[maxLevel]
-	headNode := currentList.head
-	node := headNode.next
-
-	// If first node in list has a key greater than provided key,
-	// move onto the next list in the OC.
-	//if node.item.Key > key {
-	//	// If we are already at the bottom list, then the key does not exit.
-	//	// Break out of for loop and return "", false
-	//	if i == 0 {
-	//		break
-	//	}
-	//	continue
-	//}
-
-	// Determine if next node in current list has key greater than provided key.
-	// If so, move down to next list if possible.
-	// Else, we are at the bottom list and have failed to find node with provided key.
-	for node != currentList.tail && key < node.item.key {
-		if headNode.down == nil {
-			return "", false
+	for i := o.level; i <= 1; i-- {
+		for x.next[i-1] != nil && x.next[i-1].item.Key < key {
+			x = x.next[i-1]
 		}
-		headNode = headNode.down
-		node = headNode.next
+
+		if update != nil {
+			update[i-1] = x
+		}
 	}
 
-	//for node.down != currentList.tail {
-	for node != currentList.tail && key > node.item.Key {
-		node = node.next
-	}
+	return x.next[0]
+}
 
-	if node.item.Key != key && node.down != currentList.tail {
-		//	if i == 0 {
-		//		break
-		//	}
+func (o *skipListOC) Get(key string) (string, bool) {
+	x := o.firstGet(key, nil)
 
-		node = node.down
-	}
-	//}
-
-	for node != currentList.tail && key > node.item.Key {
-		node = node.next
-	}
-
-	if node != currentList.tail && node.item.Key == key {
-		return node.item.Value, true
+	if x != nil && x.item.Key == key {
+		return x.item.Value, true
 	}
 
 	return "", false
