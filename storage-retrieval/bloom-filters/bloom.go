@@ -23,9 +23,9 @@ type myBloomFilter struct {
 	data []uint8
 }
 
-func newBloomFilter() *myBloomFilter {
+func newMyBloomFilter() *myBloomFilter {
 	return &myBloomFilter{
-		data: make([]uint8, 1000),
+		data: make([]uint8, 100000),
 	}
 }
 
