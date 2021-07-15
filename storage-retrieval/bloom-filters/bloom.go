@@ -15,6 +15,40 @@ type bloomFilter interface {
 	memoryUsage() int
 }
 
+/*
+	Below is my implementation of a Bloom Filter.
+*/
+
+type myBloomFilter struct {
+	data []uint8
+}
+
+func newBloomFilter() *myBloomFilter {
+	return &myBloomFilter{
+		data: make([]uint8, 1000),
+	}
+}
+
+func (b *myBloomFilter) add(item string) {
+	// Add item to BF.
+}
+
+func (b *myBloomFilter) maybeContains(item string) bool {
+	// If item's hashed positions are 1, might exist and return true.
+
+	// Else, if even one of the hased positions is 0, does not exist and return false.
+	return false
+}
+
+func (b *myBloomFilter) memoryUsage() int {
+	return binary.Size(b.data)
+}
+
+/*
+	Below is the trivial implementation of a Bloom Filter included
+	in the prework.
+*/
+
 type trivialBloomFilter struct {
 	data []uint64
 }
