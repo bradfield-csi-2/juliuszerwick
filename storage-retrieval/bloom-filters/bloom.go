@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/binary"
+	"fmt"
 )
 
 type bloomFilter interface {
@@ -20,17 +21,24 @@ type bloomFilter interface {
 */
 
 type myBloomFilter struct {
-	data []uint8
+	//data []uint8
+	data *BitVector
 }
 
 func newMyBloomFilter() *myBloomFilter {
+	data := make([]byte, 100000)
+	//data := make([]byte, 20)
+
 	return &myBloomFilter{
-		data: make([]uint8, 100000),
+		//data: make([]uint8, 100000),
+		data: NewBitVector(data, 800000),
+		//data: NewBitVector(data, 160),
 	}
 }
 
 // Add item to BF.
 func (b *myBloomFilter) add(item string) {
+	fmt.Printf("Added item: %s\n\n", item)
 	// Take item argument and extract a number for hashing.
 	r := []rune(item)
 
@@ -39,7 +47,7 @@ func (b *myBloomFilter) add(item string) {
 		sum += int(i)
 	}
 
-	l := len(b.data)
+	l := b.data.length
 
 	// Hash it once.
 	h1 := hashOne(sum, l)
@@ -50,11 +58,18 @@ func (b *myBloomFilter) add(item string) {
 	// Hash it thrice.
 	h3 := hashThree(h1, h2, l)
 
+	fmt.Printf("h1 = %v, h2 = %v, h3 = %v\n\n", h1, h2, h3)
+
 	// Take each resultant value from hashing and set that index
 	// in Bloom Filter array to 1.
-	b.data[h1] = 1
-	b.data[h2] = 1
-	b.data[h3] = 1
+	//b.data[h1] = 1
+	//b.data[h2] = 1
+	//b.data[h3] = 1
+	b.data.Set(1, h1)
+	b.data.Set(1, h2)
+	b.data.Set(1, h3)
+
+	//fmt.Printf("bitVector: %v\n\n", b.data)
 }
 
 func hashOne(num, m int) int {
@@ -78,7 +93,7 @@ func (b *myBloomFilter) maybeContains(item string) bool {
 		sum += int(i)
 	}
 
-	l := len(b.data)
+	l := b.data.length
 
 	// Hash it once.
 	h1 := hashOne(sum, l)
@@ -90,9 +105,13 @@ func (b *myBloomFilter) maybeContains(item string) bool {
 	h3 := hashThree(h1, h2, l)
 
 	// If item's hashed positions are 1, might exist and return true.
-	bit1 := b.data[h1]
-	bit2 := b.data[h2]
-	bit3 := b.data[h3]
+	//bit1 := b.data[h1]
+	//bit2 := b.data[h2]
+	//bit3 := b.data[h3]
+	// Check each retrieved bit if 0 before checking next bit? Small optimization?
+	bit1 := b.data.Element(h1)
+	bit2 := b.data.Element(h2)
+	bit3 := b.data.Element(h3)
 
 	if bit1 == 1 && bit2 == 1 && bit3 == 1 {
 		return true
@@ -103,7 +122,7 @@ func (b *myBloomFilter) maybeContains(item string) bool {
 }
 
 func (b *myBloomFilter) memoryUsage() int {
-	return binary.Size(b.data)
+	return binary.Size(b.data.data)
 }
 
 /*

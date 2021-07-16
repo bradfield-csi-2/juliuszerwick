@@ -27,12 +27,15 @@ func loadWords(path string) ([]string, error) {
 }
 
 func main() {
-	words, err := loadWords(wordsPath)
-	if err != nil {
-		log.Fatal(err)
-	}
+	//words, err := loadWords(wordsPath)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+
+	words := []string{"hello", "bye", "what", "who", "them", "ok", "aardvark", "table", "a", "add", "bee", "be", "cat", "dog", "book", "pen", "flower", "cup", "glass", "ice", "phone", "green"}
 
 	start := time.Now()
+	fmt.Printf("===================================================\n\n")
 
 	// TODO: Replace trivialBloomFilter with your own implementation
 	//var b bloomFilter = newTrivialBloomFilter()
@@ -64,6 +67,7 @@ func main() {
 	}
 
 	falsePositiveRate := float64(falsePositives) / float64(numChecked)
+	fmt.Printf("===================================================\n\n")
 
 	fmt.Printf("Elapsed time: %s\n", time.Since(start))
 	fmt.Printf("Memory usage: %d bytes\n", b.memoryUsage())
