@@ -2,9 +2,12 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"log"
+	_ "net/http/pprof"
 	"os"
+	"runtime/pprof"
 	"time"
 
 	"juliuszerwick/storage-retrieval/bloom-filters/bloom"
@@ -28,7 +31,20 @@ func loadWords(path string) ([]string, error) {
 	return result, nil
 }
 
+var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
+
 func main() {
+	// pprof setup
+	flag.Parse()
+	if *cpuprofile != "" {
+		f, err := os.Create(*cpuprofile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	}
+
 	words, err := loadWords(wordsPath)
 	if err != nil {
 		log.Fatal(err)
