@@ -2,6 +2,7 @@ package table
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"log"
 )
 
@@ -29,9 +30,9 @@ func Build(path string, sortedItems []Item) error {
 	}
 
 	// Write to file
-	err = ioutil.WriteWrite(path, jsonData, 0644)
+	err = ioutil.WriteFile(path, jsonData, 0644)
 	if err != nil {
-		log.Printf("JSON Marshal error: %v\n", err)
+		log.Printf("WriteFile error: %v\n", err)
 		return err
 	}
 
@@ -57,8 +58,27 @@ type Table struct {
 
 // Prepares a Table for efficient access. This will likely involve reading some metadata
 // in order to populate the fields of the Table struct.
+//
+// Note to self: Perhaps when we "load a table" we're really only loading the SSIndex?
+// That leaves the actual reading from the file to the Get function which will find
+// the offset in the file to read?
+// That would also mean each offset has to include the len(SSIndex) which would be the
+// "metadata" at the start of the file.
 func LoadTable(path string) (*Table, error) {
-	return nil, nil
+	f, err := ioutil.ReadFile(path)
+	if err != nil {
+		log.Printf("WriteFile error: %v\n", err)
+		return nil, err
+	}
+
+	t := &Table{}
+	err = json.Unmarshal([]byte(f), &t)
+	if err != nil {
+		log.Printf("JSON decode error: %v\n", err)
+		return nil, err
+	}
+
+	return t, nil
 }
 
 func (t *Table) Get(key string) (string, bool, error) {
