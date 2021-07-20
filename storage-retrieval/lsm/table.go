@@ -82,7 +82,18 @@ func LoadTable(path string) (*Table, error) {
 }
 
 func (t *Table) Get(key string) (string, bool, error) {
-	return "", false, nil
+	// Use key to lookup offset in SSIndex.
+	offset := t.Index[key]
+
+	// Access Item value in Data slice using offset.
+	item := t.Data[offset]
+
+	// Double check that provided key matches found Item.Key
+	if item.Key != key {
+		return "", false, nil
+	}
+
+	return item.Value, true, nil
 }
 
 func (t *Table) RangeScan(startKey, endKey string) (Iterator, error) {
