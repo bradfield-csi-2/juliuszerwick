@@ -11,11 +11,21 @@ func newUncompressedBitmap() *uncompressedBitmap {
 }
 
 func (b *uncompressedBitmap) Get(x uint32) bool {
-	return false
+	v := b.data[x]
+
+	if v == 0 {
+		return false
+	}
+
+	return true
 }
 
 func (b *uncompressedBitmap) Set(x uint32) {
-	// Do nothing
+	if x >= uint32(len(b.data)) {
+		b.growBitmapData(x)
+	}
+
+	b.data[x] = 1
 }
 
 func (b *uncompressedBitmap) Union(other *uncompressedBitmap) *uncompressedBitmap {
@@ -30,4 +40,9 @@ func (b *uncompressedBitmap) Intersect(other *uncompressedBitmap) *uncompressedB
 	return &uncompressedBitmap{
 		data: data,
 	}
+}
+
+func (b *uncompressedBitmap) growBitmapData(x uint32) {
+	padding := make([]uint64, x+1)
+	b.data = append(b.data, padding...)
 }
