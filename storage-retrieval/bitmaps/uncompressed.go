@@ -42,8 +42,36 @@ func (b *uncompressedBitmap) Union(other *uncompressedBitmap) *uncompressedBitma
 	//		- Else, set data[i] = 0.
 	// After the loop finishes, if bitmaps were not equal in length then append remaining values from larger bitmap to new data slice.
 	//		- data = append(data, [subslice of remaining elements]...)
-
 	var data []uint64
+
+	alen := len(b.data)
+	blen := len(other.data)
+	limit := 0
+
+	if alen <= blen {
+		padding := make([]uint64, alen)
+		data = append(data, padding...)
+		limit = alen
+	} else {
+		padding := make([]uint64, blen)
+		data = append(data, padding...)
+		limit = blen
+	}
+
+	for i := 0; i < limit; i++ {
+		if b.data[i] == 1 || other.data[i] == 1 {
+			data[i] = 1
+		}
+	}
+
+	if limit == alen {
+		subSlice := other.data[limit:]
+		data = append(data, subSlice...)
+	} else {
+		subSlice := b.data[limit:]
+		data = append(data, subSlice...)
+	}
+
 	return &uncompressedBitmap{
 		data: data,
 	}
@@ -55,6 +83,24 @@ func (b *uncompressedBitmap) Intersect(other *uncompressedBitmap) *uncompressedB
 	// And after the loop, don't append the remaining elements as they only exist in
 	// one of the two bitmaps. Thus, they are not in the intersect.
 	var data []uint64
+
+	alen := len(b.data)
+	blen := len(other.data)
+
+	if alen <= blen {
+		padding := make([]uint64, alen)
+		data = append(data, padding...)
+	} else {
+		padding := make([]uint64, blen)
+		data = append(data, padding...)
+	}
+
+	for i := 0; i < len(data); i++ {
+		if b.data[i] == 1 && other.data[i] == 1 {
+			data[i] = 1
+		}
+	}
+
 	return &uncompressedBitmap{
 		data: data,
 	}
